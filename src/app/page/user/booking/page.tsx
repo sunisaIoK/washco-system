@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-// import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { useRouter, useSearchParams } from "next/navigation";
 import { NextResponse } from "next/server";
 
@@ -34,7 +34,7 @@ interface DetailData {
     isActive: boolean;
 }
 
-// const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
 
 const BookingPage = () => {
     const [services, setServices] = useState<ServiceData[]>([]);
@@ -214,12 +214,12 @@ const BookingPage = () => {
     //การจ่าย
     // ฟังก์ชัน handlePayment
     const handlePayment = async () => {
-    // const stripe = await stripePromise;
+    const stripe = await stripePromise;
 
-    // if (!stripe) {
-    //     console.error("Stripe.js failed to load.");
-    //     return;
-    // }
+    if (!stripe) {
+        console.error("Stripe.js failed to load.");
+        return;
+    }
 
     try {
         const items = [];
@@ -266,7 +266,7 @@ const BookingPage = () => {
         const { id } = await response.json();
 
         // Redirect ไป Stripe Checkout
-        // const { error } = await stripe.redirectToCheckout({ sessionId: id });
+        const { error } = await stripe.redirectToCheckout({ sessionId: id });
 
         if (error) {
             console.error("Stripe Checkout Error:", error);
