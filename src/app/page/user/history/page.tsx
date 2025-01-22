@@ -1,254 +1,228 @@
 'use client';
 
-import { Icon } from '@iconify/react';
-import React, { useEffect, useState } from 'react';
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
 
-interface DetailField {
-    fieldName: string;
-    fieldValue: string;
-}
-
-interface Detail {
+//รูปแบบข้อมูล
+interface Order {
     id: string;
-    nameDetail: string;
-    fields: DetailField[];
-    price: string;
+    name: string;
+    phone: number;
+    totalPrice: number;
+    hotelName: string;
+    roomNumber: string;
+    additionalDetails: string;
+    pickupDate: string;
+    deliveryDate: string;
+    createdAt: string;
+    // สมมติว่ามีฟิลด์บริการมาเป็น Object ด้วย
+    services: { nameService: string; price: number; description: string } | null;
+    details: { fieldValue: string; price: number }[]; // หรือ Array
+    delivery: { Delivery: number; descriptionDelivery: string; description: string } | null;
     isActive: boolean;
 }
 
-const HistoryPage = () => {
-    const [details, setDetails] = useState<Detail[]>([]);
+const History = () => {
+    const { data: session } = useSession();
+    const [orders, setOrders] = useState<Order[]>([]); // เก็บข้อมูลคำสั่งจอง
+    const [loading, setLoading] = useState(true); // สถานะการโหลดข้อมูล
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedDetail, setSelectedDetail] = useState<Detail | null>(null);
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
-    const fetchDetails = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch('/api/data/detail', { method: 'GET' });
-            if (!response.ok) {
-                throw new Error('Failed to fetch details');
-            }
-            const { details } = await response.json();
-            setDetails(details || []);
-        } catch (err) {
-            console.error('Error fetching details:', err);
-            setError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // ฟังก์ชันดึงข้อมูลคำสั่งจอง
 
     useEffect(() => {
-        fetchDetails(); // Fetch details when the component is mounted
-    }, []);
+        const fetchAllData = async () => {
+            try {
+                if (!session?.user?.id) return; // ยังไม่ได้ล็อกอิน ไม่ต้อง fetch
+                setLoading(true);
+                const response = await fetch(`/api/data/order?customerId=${session.user.id}`, {
+                    method: 'GET',
+                });
+                if (!response.ok) {
+                    throw new Error('ไม่สามารถดึงข้อมูลได้');
+                }
+                const data = await response.json();
+                setOrders(data.Orders || []); // เซ็ตข้อมูลคำสั่งจอง
+            } catch (error) {
+                console.error('เกิดข้อผิดพลาดในการดึงรายละเอียด:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const toggleStatus = async (id: string, isActive: boolean) => {
-        try {
-            setLoading(true);
-            const response = await fetch('/api/data/detail', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, isActive: !isActive }),
-            });
+        // ดึงข้อมูลเมื่อหน้าโหลด
+        fetchAllData();
 
-            if (!response.ok) throw new Error('Failed to update status');
-
-            await fetchDetails(); // Reload data after updating status
-            alert('เปลี่ยนสถานะเรียบร้อย');
-        } catch (err) {
-            console.error('Error toggling status:', err);
-            alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
-        } finally {
-            setLoading(false);
+        // ตรวจสอบสถานะอัปเดต
+        const statusUpdated = localStorage.getItem('statusUpdated');
+        if (statusUpdated === 'true') {
+            fetchAllData(); // ดึงข้อมูลใหม่
+            localStorage.removeItem('statusUpdated'); // ลบสถานะเพื่อป้องกัน re-fetch
         }
-    };
+    }, [session]);
 
-    const handleDelete = async (id: string) => {
-        const confirmDelete = confirm('คุณแน่ใจหรือไม่ว่าจะลบรายการนี้?');
-        if (!confirmDelete) return;
 
-        try {
-            setLoading(true);
-            const response = await fetch('/api/data/detail', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id }),
-            });
+    // const toggleStatus = async (id: string, isActive: boolean) => {
+    //     try {
+    //         setLoading(true);
+    //         const response = await fetch(`/api/data/order`, {
+    //             method: 'PATCH',
+    //             headers: { 'Content-Type': 'application/json' },
+    //             body: JSON.stringify({ id, isActive: !isActive }),
+    //         });
 
-            if (!response.ok) throw new Error('การลบข้อมูลไม่สำเร็จ');
+    //         if (!response.ok) throw new Error('Failed to update status');
 
-            await fetchDetails(); // Reload data after deletion
-            alert('ลบข้อมูลเรียบร้อย');
-        } catch (error) {
-            console.error('Error deleting detail:', error);
-            alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-        } finally {
-            setLoading(false);
-        }
-    };
+    //         // รีโหลดข้อมูลหลังจากอัปเดตสถานะสำเร็จ
+    //         const updatedOrders = orders.map((order) =>
+    //             order.id === id ? { ...order, isActive: !isActive } : order
+    //         );
+    //         setOrders(updatedOrders);
 
-    const handleSave = async () => {
-        if (!selectedDetail) return;
+    //         alert('เปลี่ยนสถานะเรียบร้อย');
+    //     } catch (err) {
+    //         console.error('Error toggling status:', err);
+    //         alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
-        try {
-            setIsSaving(true);
-            const validFields = selectedDetail.fields.filter(
-                (field) => field.fieldName.trim() && field.fieldValue.trim()
-            );
 
-            const response = await fetch('/api/data/detail', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...selectedDetail,
-                    fields: validFields,
-                }),
-            });
-
-            if (!response.ok) throw new Error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-
-            await fetchDetails(); // Reload data after saving
-            alert('บันทึกข้อมูลสำเร็จ');
-            closeModal();
-        } catch (error) {
-            console.error('Error saving detail:', error);
-            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const openViewModal = (detail: Detail) => {
-        setSelectedDetail(detail);
+    const openViewModal = (order: Order) => {
+        setSelectedOrder(order);
         setIsViewModalOpen(true);
     };
-
-    const openEditModal = (detail: Detail) => {
-        setSelectedDetail(detail);
-        setIsEditModalOpen(true);
-    };
-
     const closeModal = () => {
-        setSelectedDetail(null);
         setIsViewModalOpen(false);
-        setIsEditModalOpen(false);
     };
 
     return (
-        <main className="p-7 mr-12 ml-12 text-center">
-            <div className="mb-4 flex flex-col items-center text-center" style={{marginTop: '-40px'}}>
-                <h1 className="text-2xl font-bold mb-4">ประวัติการจองบริการ
-                </h1>
+        <main className="p-7">
+            <div className="mb-4 flex items-center">
+                <h1 className="text-2xl font-bold mb-4">รายการคำสั่งจอง</h1>
             </div>
-
-            {error && <div className="text-red-500 my-4">{error}</div>}
-
-            {loading ? (
-                // Skeleton for loading
-                <div className="flex justify-center mt-6 space-y-4 animate-pulse items-center">
-                    <div className=' border border-gray-200 p-4 shadow-sm rounded-md'>
-                        <table className="w-full border-collapse border border-gray-300">
-                            <thead>
-                                <tr className="bg-gray-200">
-                                    <th className="border px-4 py-2">วันที่จอง</th>
-                                    <th className="border px-4 py-2">บริการ</th>
-                                    <th className="border px-4 py-2">รายละเอียด</th>
-                                    <th className="border px-4 py-2">ราคา</th>
-                                    <th className="border px-4 py-2">สถานะ</th>
-                                    <th className="border px-4 py-2">รีวิว</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr className="text-center animate-pulse">
-                                    <td className="border px-4 py-2 ">&nbsp;</td>
-                                    <td className="border px-4 py-2 ">&nbsp;</td>
-                                    <td className="border px-4 py-2 ">&nbsp;</td>
-                                    <td className="border px-4 py-2 ">
-                                        <div
-                                            className="flex items-center justify-center space-x-6 border border-gray-200 p-4 shadow-sm rounded-md"
-                                        >
-                                        </div>
-                                    </td>
-                                    <td className="px-4 py-2 md:flex-row">
-                                        <div
-                                            className="flex items-center justify-center space-x-6 "
-                                        >
-                                            <div
-                                                className="flex items-center justify-center space-x-6 border border-gray-200 p-4 shadow-sm rounded-md"
-                                            >
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            ) : (
-                <div className="overflow-x-auto mt-6">
-                    <table className="w-full border-collapse border border-gray-300 text-sm">
-                        <thead>
-                            <tr className="bg-gray-100 text-md">
-                                <th className="border px-4 py-2">วันที่จอง</th>
-                                <th className="border px-4 py-2 w-3/12">บริการ</th>
-                                <th className="border px-4 py-2 w-4/12">รายละเอียด</th>
-                                <th className="border px-4 py-2">ราคา</th>
-                                <th className="border px-4 py-2">สถานะการชำระ</th>
-                                <th className="border px-4 py-2">รีวิว</th>
+            {/* แสดงข้อมูลคำสั่งจอง */}
+            {orders.length > 0 ? (
+                <table className="border-collapse text-center border border-gray-400 w-full mt-4">
+                    <thead>
+                        <tr>
+                            <th className="border border-gray-300 p-2">ชื่อ</th>
+                            <th className="border border-gray-300 p-2">บริการที่เลือก</th>
+                            <th className="border border-gray-300 p-2">วิธีการรับ-ส่งคืน</th>
+                            <th className="border border-gray-300 p-2">วันที่จอง</th>
+                            <th className="border border-gray-300 p-2">การดำเนินงาน</th>
+                            <th className="border border-gray-300 p-2">ดูข้อมูล</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {orders.map((order) => (
+                            <tr key={order.id} className="hover:bg-gray-100">
+                                <td className="border border-gray-300 p-2">{order.name ? order.name : "ไม่มีชื่อ"}</td>
+                                <td className="border border-gray-300 p-2">{order.services ? order.services.nameService : "ไม่มีบริการ"}</td>
+                                <td className="border border-gray-300 p-2">{order.delivery ? order.delivery.Delivery : "ไม่มีวิธีการรับ-ส่งคืน"}</td>
+                                <td className="border border-gray-300 p-2">{order.createdAt ? order.createdAt : "ไม่มีวิธีการรับ-ส่งคืน"}</td>
+                                <td className="border px-4 py-2">
+                                    <button
+                                        onClick={() => (order.id, order.isActive)}
+                                        className={`px-4 py-1 rounded ${order.isActive ? 'bg-green-300 text-green-800' : 'bg-red-100 text-red-800'}`}
+                                    >
+                                        {order.isActive ? 'ดำเนินการ' : 'เสร็จสิ้น'}
+                                    </button>
+                                </td>
+                                <td className="border border-gray-300 p-2">
+                                    <button
+                                        onClick={() => openViewModal(order)}
+                                        className="bg-blue-200 text-blue-500 px-3 py-1 rounded hover:bg-blue-300 hover:text-blue-600"
+                                    >
+                                        ดูข้อมูล
+                                    </button>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {details.map((detail) => (
-                                <tr key={detail.id} className="text-center text-lg even:bg-gray-50 hover:bg-gray-100">
-                                    {/* ชื่อรายละเอียด */}
-                                    <td className="border px-4 py-2">{detail.nameDetail}</td>
-                                    {/* ราคา */}
-                                    <td className="border px-4 py-2">{detail.price} บาท</td>
-                                    {/* สถานะ */}
-                                    <td className="border px-4 py-2">
-                                        <button
-                                            onClick={() => toggleStatus(detail.id, detail.isActive)}
-                                            className={`px-4 py-1 rounded ${detail.isActive ? 'bg-green-300 text-green-80' : 'bg-red-100 text-red-800'}`}
-                                        >
-                                            {detail.isActive ? 'เปิด' : 'ปิด'}
-                                        </button>
-                                    </td>
-                                    {/* ดูข้อมูล */}
-                                    <td className="border px-4 py-2">
-                                        <button
-                                            onClick={() => openViewModal(detail)}
-                                            className="bg-blue-200 text-blue-500 px-3 py-1 rounded hover:bg-blue-300 hover:text-blue-600"
-                                        >
-                                            ดูข้อมูล
-                                        </button>
-                                    </td>
-                                    {/* การจัดการ */}
-                                    <td className="border px-4 py-2 gap-2 ">
-                                        <button
-                                            onClick={() => openEditModal(detail)}
-                                            className="bg-yellow-400 text-white hover:text-white px-2 py-2 mr-1 rounded hover:bg-yellow-500"
-                                        >
-                                            <Icon icon="mdi:pencil" className="w-5 h-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(detail.id)}
-                                            className="bg-red-500 text-white px-2 py-2 rounded ml-1 hover:text-white hover:bg-red-600"
-                                        >
-                                            <Icon icon="mdi:trash-can-outline" className="w-5 h-5" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p className="text-center text-gray-500">ยังไม่มีคำสั่งจอง</p>
+            )}
+            {isViewModalOpen && selectedOrder && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded w-full max-w-7xl min-h-sm">
+                        <div className="flex flex-col md:flex-row justify-between">
+                            <div className="flex flex-col ">
+                                <h2 className="text-xl font-bold mb-4">รายละเอียดคำสั่งซื้อ</h2>
+                            </div>
+                            <div className="flex flex-col ">
+                                <button
+                                    onClick={closeModal}
+                                    className=" bg-gray-500 text-white px-4 py-2 rounded"
+                                >
+                                    ปิด
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex flex-col md:flex-row p-2 ">
+                            <div className="grid grid-cols-1 text-center gap-4 w-10/12">
+                                <div className="">
+                                    <p className="font-semibold mb-1">ชื่อ :</p>
+                                    <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.name}</p>
+                                    <p className="font-semibold  mb-1 mt-1">เบอร์โทรศัพท์ :</p>
+                                    <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.phone}</p>
+                                    <p className="font-semibold mb-1 mt-1">บริการ :</p>
+                                    <div className="grid grid-cols-2 gap-4 w-full mb-2">
+                                        <p className="bg-gray-100 px-3 py-2 mb-1 rounded">{selectedOrder.services?.nameService}</p>
+                                        <p className="bg-gray-100 px-3 py-2 mb-1 rounded">{selectedOrder.services?.price}</p>
+                                    </div>
+                                    <div className="">
+                                        <p className="font-semibold mb-1 ">สถานะชำระ :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded mb-1">สถานะชำระ</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 text-center gap-4 w-7/12 ml-2 mr-2">
+                                <div className="">
+                                    <p className="font-semibold  mb-1 mt-1">รายการ :</p>
+                                    {selectedOrder && selectedOrder.details?.map((detail, index) => (
+                                        <div key={index} className="grid grid-cols-2 gap-4 w-full mb-2">
+                                            <p className="bg-gray-100 px-3 py-2 rounded">{detail.fieldValue}</p>
+                                            <p className="bg-gray-100 px-3 py-2 rounded">{detail.price}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 text-center gap-4 w-4/12">
+                                <div className="">
+                                    {/* <p className="font-semibold">ข้อมูลที่อยู่:</p> */}
+                                    <div className="">
+                                        <p className="font-semibold mb-1">ชื่อโรงแรม :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.hotelName}</p>
+                                        <p className="font-semibold  mb-1 mt-1">หมายเลขห้อง :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.roomNumber}</p>
+                                        <p className="font-semibold  mb-1 mt-1">รายละเอียดเพิ่มเติม :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.additionalDetails}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 text-center gap-4 w-6/12 ml-2">
+                                <div className="">
+                                    {/* <p className="font-semibold">วัน-เวลาการรับ-จัดส่ง:</p> */}
+                                    <div>
+                                        <p className="font-semibold  mb-1 ">วันที่รับผ้า  :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.pickupDate}</p>
+                                        <p className="font-semibold  mb-1 mt-1">วันที่คืนผ้า :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.deliveryDate}</p>
+                                        <p className="font-semibold  mb-1 mt-1">วันที่จอง :</p>
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.createdAt}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </main>
     );
 };
 
-export default HistoryPage;
+export default History;
