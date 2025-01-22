@@ -1,10 +1,12 @@
 'use client'
 import React, { useState } from 'react'
-import { Button } from 'src/components/ui/button'
+import { Button } from '@/components/ui/button'
+import { time } from 'console'
 
 const CreatService = () => {
   const [nameService, setNameService] = useState('')
   const [description, setDescription] = useState('')
+  const [hour, setHour] = useState('')
   const [price, setPrice] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
@@ -17,7 +19,7 @@ const CreatService = () => {
     setSuccess('')
     setIsLoading(true)
 
-    if (!nameService || !description || !price) {
+    if (!nameService || !description || !hour || !price) {
       setError('กรุณากรอกข้อมูลให้ครบถ้วน')
       setIsLoading(false)
       return
@@ -27,7 +29,7 @@ const CreatService = () => {
       const response = await fetch('/api/data/service', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nameService, description, price, isActive }),
+        body: JSON.stringify({ nameService, description, hour, price, isActive }),
       })
 
       if (!response.ok) {
@@ -79,6 +81,16 @@ const CreatService = () => {
             ></textarea>
           </div>
           <div className="mb-4">
+            <label className="block font-medium mb-1">ชั่วโมง:</label>
+            <input
+              placeholder="ชั่วโมง"
+              value={hour}
+              onChange={(e) => setHour(e.target.value)}
+              className="w-full border px-3 py-2 rounded"
+              required
+            ></input>
+          </div>
+          <div className="mb-4">
             <label className="block font-medium mb-1">ราคา:</label>
             <input
               type="number"
@@ -89,49 +101,6 @@ const CreatService = () => {
               required
             />
           </div>
-          <div className="mb-4 flex items-center">
-            <input
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="mr-2 rounded"
-              required
-            />
-            <label className="text-sm">เปิดใช้งานบริการ</label>
-            <style jsx>{`
-                        input[type='checkbox'] {
-                          appearance: none;
-                          width: 1.25rem;
-                          height: 1.25rem;
-                          border: 1px solid #ccc;
-                          border-radius: 0.25rem;
-                          background-color: white;
-                          transition: all 0.3s ease;
-                          cursor: pointer;
-                          position: relative;
-                        }
-
-                        input[type='checkbox']:checked {
-                          background-color: #22c55e; /* สีเขียว */
-                          border-color: #22c55e;
-                        }
-
-                        input[type='checkbox']:checked::after {
-                          content: '✔';
-                          position: absolute;
-                          top: 0;
-                          left: 0;
-                          width: 100%;
-                          height: 100%;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          font-size: 1rem;
-                          color: white;
-                        }
-                      `}
-            </style>
-          </div>
           <div className="flex justify-center">
             <Button type="submit" disabled={isLoading} className="bg-green-500 text-white hover:bg-green-600 hover:text-white px-4 py-2 rounded">
               {isLoading ? 'กำลังบันทึก...' : 'บันทึก'}
@@ -139,13 +108,13 @@ const CreatService = () => {
           </div>
         </form>
       </div>
-      <div className="flex justify-center mt-9">
+      {/* <div className="flex justify-center mt-9">
         <a href="/page/service">
           <button className="text-white bg-black  px-4 py-2 rounded">
           ย้อนกลับ
         </button>
         </a>
-      </div>
+      </div> */}
     </main>
   )
 }

@@ -6,11 +6,14 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { loadStripe } from '@stripe/stripe-js';
 import { useRouter, useSearchParams } from "next/navigation";
 import { NextResponse } from "next/server";
+import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 interface ServiceData {
     id: string;
     nameService: string;
     description: string;
+    hour: number;
     price: number;
     isActive: boolean;
 }
@@ -37,6 +40,8 @@ interface DetailData {
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
 
 const BookingPage = () => {
+    const { data: session, status } = useSession();
+
     const [services, setServices] = useState<ServiceData[]>([]);
     const [deliveries, setDeliveries] = useState<DeliveryData[]>([]);
     const [details, setDetails] = useState<DetailData[]>([]);
@@ -56,16 +61,14 @@ const BookingPage = () => {
     const [error, setError] = useState("");
     const [confirmedOrder, setConfirmedOrder] = useState<any>(null);
     const [paymentSuccess, setPaymentSuccess] = useState(false);
-   
+
     const [formData, setFormData] = useState({
         hotelName: '',
         roomNumber: '',
         additionalDetails: '',
         name: '',
-        email: '',
         phone: '',
     });
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prevState) => ({
@@ -83,22 +86,36 @@ const BookingPage = () => {
                 throw new Error('ไม่สามารถดึงข้อมูลได้');
             }
             const { serviceData, detailData, deliveryData } = await response.json();
-            // อัปเดต State
             setServices(serviceData || []);
-            setDeliveries(deliveryData || []);
             setDetails(detailData || []);
+            setDeliveries(deliveryData || []);
         } catch (error) {
             console.error("Error fetching data:", error);
             setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
         } finally {
-            setLoading(false); // ปิดสถานะการโหลดเมื่อโหลดหรือดึงข้อมูลสำเร็จหรือเกิดข้อผิดพลาด
+            setLoading(false);
         }
     };
 
-    // ดึงข้อมูลเมื่อหน้าโหลด
     useEffect(() => {
         fetchAllData();
     }, []);
+
+    // ฟังก์ชันคำนวณวันที่ส่งคืน
+    const calculateDeliveryDate = () => {
+        if (pickupDate && selectedServices?.hour) {
+            const pickupTime = new Date(pickupDate); // สำเนาของ pickupDate
+            pickupTime.setHours(pickupTime.getHours() + selectedServices.hour); // เพิ่มจำนวนชั่วโมงที่เลือกจากบริการ
+            setDeliveryDate(pickupTime); // อัปเดต deliveryDate
+        } else {
+            setDeliveryDate(null); // รีเซ็ต deliveryDate ถ้าไม่มีข้อมูล
+        }
+    };
+
+    // เรียกฟังก์ชันคำนวณวันที่ส่งคืนทุกครั้งที่ pickupDate หรือ selectedServices เปลี่ยนแปลง
+    useEffect(() => {
+        calculateDeliveryDate();
+    }, [pickupDate, selectedServices]);
 
     // เพิ่มบริการที่เลือก
     const handleServiceSelection = (services: ServiceData) => {
@@ -128,7 +145,6 @@ const BookingPage = () => {
         setSelectedDelivery(delivery); // กำหนดค่าเป็น Object เดียว
     };
 
-
     // วัน และสรุปวันรับ-ส่ง
     const handleConfirmation = async () => {
         try {
@@ -137,7 +153,7 @@ const BookingPage = () => {
             //     alert('กรุณาชำระเงินก่อนยืนยันคำสั่งซื้อ');
             //     return;
             // }
-    
+
             // จัดเตรียมข้อมูลสำหรับบันทึก
             const confirmedData = {
                 services: selectedServices,
@@ -147,35 +163,39 @@ const BookingPage = () => {
                 ...formData, // ข้อมูลติดต่อ (ที่อยู่, ชื่อ, อีเมล, เบอร์โทร)
                 pickupDate: pickupDate?.toISOString() || null,
                 deliveryDate: deliveryDate?.toISOString() || null,
+                customerId: session?.user?.id || null,
             };
-    
-            // ตรวจสอบว่ามีข้อมูลครบถ้วนหรือไม่
-            if (
-                !confirmedData.services || // บริการ
-                confirmedData.details.length === 0 || // รายละเอียด
-                !confirmedData.delivery || // วิธีส่ง
-                !confirmedData.pickupDate || // วันที่รับผ้า
-                !confirmedData.deliveryDate || // วันที่ส่งคืน
-                !confirmedData.name || // ข้อมูลติดต่อ ชื่อ
-                !confirmedData.email || // ข้อมูลติดต่อ อีเมล
-                !confirmedData.phone // ข้อมูลติดต่อ เบอร์โทร
-            ) {
-                alert('กรุณาเลือกข้อมูลให้ครบถ้วนก่อนยืนยันคำสั่งซื้อ');
+
+            if (!confirmedData.customerId) {
+                alert("กรุณาล็อกอินก่อนทำรายการ");
                 return;
             }
-    
+
+            // ตรวจสอบว่ามีข้อมูลครบถ้วนหรือไม่
+            if (
+                !confirmedData.services ||
+                confirmedData.details.length === 0 ||
+                !confirmedData.delivery ||
+                !confirmedData.pickupDate ||
+                !confirmedData.deliveryDate ||
+                !confirmedData.name ||
+                !confirmedData.phone
+            ) {
+                alert('กรุณาเลือก/กรอกข้อมูลให้ครบถ้วนก่อนยืนยันคำสั่งซื้อ');
+                return;
+            }
+
             // ส่งข้อมูลไปยัง API
             const response = await fetch('/api/data/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(confirmedData),
             });
-    
-            // ตรวจสอบ Response จาก Backend
+
             if (!response.ok) {
                 throw new Error('การบันทึกคำสั่งซื้อไม่สำเร็จ');
             }
-    
+
             console.log('Order saved successfully.');
             alert('ข้อมูลคำสั่งซื้อถูกบันทึกเรียบร้อยแล้ว!');
         } catch (error) {
@@ -214,70 +234,70 @@ const BookingPage = () => {
     //การจ่าย
     // ฟังก์ชัน handlePayment
     const handlePayment = async () => {
-    const stripe = await stripePromise;
+        const stripe = await stripePromise;
 
-    if (!stripe) {
-        console.error("Stripe.js failed to load.");
-        return;
-    }
-
-    try {
-        const items = [];
-
-        // สร้างรายการสินค้า (Services, Details, Delivery)
-        if (selectedServices) {
-            items.push({
-                name: selectedServices.nameService,
-                price: (selectedServices.price|| 0 ) * 100 ,
-                quantity: 1,
-            });
+        if (!stripe) {
+            console.error("Stripe.js failed to load.");
+            return;
         }
 
-        selectedDetails.forEach((detail) => {
-            if(detail.price !== undefined){
+        try {
+            const items = [];
+
+            // สร้างรายการสินค้า (Services, Details, Delivery)
+            if (selectedServices) {
                 items.push({
-                    name: detail.fieldValue || "ไม่มีชื่อ",
-                    price: (detail.price || 0) * 100,
+                    name: selectedServices.nameService,
+                    price: (selectedServices.price || 0) * 100,
                     quantity: 1,
                 });
             }
-        });
 
-        if (selectedDelivery) {
-            items.push({
-                name: selectedDelivery.Delivery,
-                price: parseFloat(selectedDelivery.descriptionDelivery || "0") * 100,
-                quantity: 1,
+            selectedDetails.forEach((detail) => {
+                if (detail.price !== undefined) {
+                    items.push({
+                        name: detail.fieldValue || "ไม่มีชื่อ",
+                        price: (detail.price || 0) * 100,
+                        quantity: 1,
+                    });
+                }
             });
+
+            if (selectedDelivery) {
+                items.push({
+                    name: selectedDelivery.Delivery,
+                    price: parseFloat(selectedDelivery.descriptionDelivery || "0") * 100,
+                    quantity: 1,
+                });
+            }
+
+            console.log("Items sent to Stripe:", items);
+
+            const response = await fetch("/api/stripe/create-checkout-session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to create Stripe Checkout Session");
+            }
+
+            const { id } = await response.json();
+
+            // Redirect ไป Stripe Checkout
+            const { error } = await stripe.redirectToCheckout({ sessionId: id });
+
+            if (error) {
+                console.error("Stripe Checkout Error:", error);
+            } else {
+                setPaymentSuccess(true); // อัปเดตสถานะการชำระเงินสำเร็จ
+                alert("ชำระเงินสำเร็จแล้ว!");
+            }
+        } catch (error) {
+            console.error("Error handling payment:", error);
         }
-
-        console.log("Items sent to Stripe:", items);
-
-        const response = await fetch("/api/stripe/create-checkout-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ items }),
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to create Stripe Checkout Session");
-        }
-
-        const { id } = await response.json();
-
-        // Redirect ไป Stripe Checkout
-        const { error } = await stripe.redirectToCheckout({ sessionId: id });
-
-        if (error) {
-            console.error("Stripe Checkout Error:", error);
-        } else {
-            setPaymentSuccess(true); // อัปเดตสถานะการชำระเงินสำเร็จ
-            alert("ชำระเงินสำเร็จแล้ว!");
-        }
-    } catch (error) {
-        console.error("Error handling payment:", error);
-    }
-};
+    };
 
     // กรองข้อมูลที่เปิดใช้งาน
     const activeDetails = details.filter((detail) => detail.isActive);
@@ -306,58 +326,36 @@ const BookingPage = () => {
                                 <div className="text-center mb-6">
                                     <h1 className="text-2xl font-bold mb-2">สร้างคำสั่งจอง</h1>
                                 </div>
-
-                                {/* เลือกวันที่ */}
-                                <fieldset className="bg-gray-50 p-6 rounded-xl shadow-lg mb-6">
-                                    <h2 className="text-lg font-bold mb-4">เลือกวันที่รับผ้า</h2>
-                                    <DatePicker
-                                        selected={pickupDate}
-                                        onChange={(date) => setPickupDate(date)}
-                                        minDate={new Date()}
-                                        dateFormat="yyyy-MM-dd"
-                                        className="border rounded p-2"
-                                        placeholderText="เลือกวันรับผ้า"
-                                    />
-                                </fieldset>
-
-                                <fieldset className="bg-gray-50 p-6 rounded-xl shadow-lg mb-6">
-                                    <h2 className="text-lg font-bold mb-4">เลือกวันที่ส่งคืนผ้า</h2>
-                                    <DatePicker
-                                        selected={deliveryDate}
-                                        onChange={(date) => setDeliveryDate(date)}
-                                        minDate={pickupDate || new Date()}
-                                        dateFormat="yyyy-MM-dd"
-                                        className="border rounded p-2"
-                                        placeholderText="เลือกวันส่งคืนผ้า"
-                                    />
-                                </fieldset>
+                                {/* ส่วนแสดง Loading/Error และข้อมูล Services */}
+                                <div className="p-6">
+                                    <h2 className="text-xl font-semibold mb-4">เลือกบริการ</h2>
+                                    {loading ? (
+                                        <p>กำลังโหลดข้อมูล...</p>
+                                    ) : error ? (
+                                        <p className="text-red-500">{error}</p>
+                                    ) : services.length === 0 ? (
+                                        <p className="text-center text-gray-500">ไม่มีบริการที่พร้อมใช้งาน</p>
+                                    ) : (
+                                        services.map((service) => (
+                                            <div
+                                                key={service.id}
+                                                onClick={() => handleServiceSelection(service)}
+                                                className={`p-4 border rounded cursor-pointer m-3 ${selectedServices?.id === service.id
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-gray-300'
+                                                    }`}
+                                            >
+                                                <p className="font-semibold">{service.nameService}</p>
+                                                <p>{service.description}</p>
+                                                <p>เวลา: {service.hour} ชั่วโมง</p>
+                                                <p>ราคา: {service.price} บาท</p>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
-                    {/* ส่วนแสดง Loading/Error และข้อมูล Services */}
-                    <div className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">เลือกบริการ</h2>
-                        {loading ? (
-                            <p>กำลังโหลดข้อมูล...</p>
-                        ) : error ? (
-                            <p>{error}</p>
-                        ) : (
-                            activeServices.map((service) => (
-                                <div
-                                    key={service.id}
-                                    onClick={() => handleServiceSelection(service)}
-                                    className={`p-4 border rounded cursor-pointer ${selectedServices?.id === service.id
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-300'
-                                        }`}
-                                >
-                                    <p>{service.nameService}</p>
-                                    <p>{service.price} บาท</p>
-                                </div>
-                            ))
-                        )}
-                    </div>
-
                     {/* ส่วนแสดง Loading/Error และข้อมูล Details */}
                     <div className="p-6">
                         <h2 className="text-xl font-semibold mb-4">เลือกรายละเอียด</h2>
@@ -427,6 +425,30 @@ const BookingPage = () => {
                             ))
                         )}
                     </div>
+                      {/* เลือกวันที่ */}
+                      <div className="p-6">
+                                    <h2 className="text-xl font-semibold mb-4">เลือกวันที่รับผ้า</h2>
+                                    <DatePicker
+                                        selected={pickupDate}
+                                        onChange={(date) => setPickupDate(date)}
+                                        minDate={new Date()}
+                                        dateFormat="yyyy-MM-dd HH:mm"
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        className="border rounded p-2"
+                                        placeholderText="เลือกวันที่รับผ้า"
+                                    />
+                                </div>
+
+                                {/* วันที่ส่งคืนผ้าคำนวณอัตโนมัติ */}
+                                <div className="p-6">
+                                    <h2 className="text-xl font-semibold mb-4">วันที่ส่งคืน (คำนวณอัตโนมัติ)</h2>
+                                    {deliveryDate ? (
+                                        <p className="bg-gray-100 px-3 py-2 rounded">{deliveryDate.toLocaleString()}</p>
+                                    ) : (
+                                        <p className="text-gray-500">ยังไม่ได้เลือกวันที่รับผ้า</p>
+                                    )}
+                                </div>
 
                     <div className="p-6">
                         <h2 className="text-xl font-semibold mb-4">ที่อยู่และข้อมูลติดต่อ</h2>
@@ -500,20 +522,6 @@ const BookingPage = () => {
                                             placeholder="ระบุชื่อผู้ติดต่อ"
                                         />
                                     </div>
-                                    <div className="mb-4">
-                                        <label htmlFor="email" className="block font-medium mb-1">
-                                            อีเมล:
-                                        </label>
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="w-full border rounded-md p-2"
-                                            placeholder="example@gmail.com"
-                                        />
-                                    </div>
                                     <div>
                                         <label htmlFor="phone" className="block font-medium mb-1">
                                             เบอร์โทรศัพท์:
@@ -539,9 +547,9 @@ const BookingPage = () => {
                     <ul>
                         <h3 className="text-md font-semibold">บริการ:</h3>
                         {selectedServices ? (
-                            <p>- {selectedServices.nameService} : {selectedServices.price} บาท</p>
+                            <p>- {selectedServices.nameService} : {selectedServices.description} : {selectedServices.hour} ชั่วโมง : ราคา {selectedServices.price} บาท</p>
                         ) : (
-                            <p>ยังไม่ได้เลือกวิธีรับส่ง</p>
+                            <p>ยังไม่ได้เลือกบริการ</p>
                         )}
                     </ul>
                     <ul>
@@ -578,10 +586,9 @@ const BookingPage = () => {
                     </ul>
                     <ul>
                         <h3 className="text-md font-semibold">ข้อมูลติดต่อ:</h3>
-                        {formData.name || formData.email || formData.phone ? (
+                        {formData.name || formData.phone ? (
                             <>
                                 <li>- ชื่อ: {formData.name || 'ไม่ได้ระบุ'}</li>
-                                <li>- อีเมล: {formData.email || 'ไม่ได้ระบุ'}</li>
                                 <li>- เบอร์โทรศัพท์: {formData.phone || 'ไม่ได้ระบุ'}</li>
                             </>
                         ) : (
@@ -630,12 +637,12 @@ const BookingPage = () => {
                     >
                         ยืนยันคำสั่งซื้อ
                     </button>
-                    {/* <button
+                    <button
                         onClick={handlePayment}
                         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     >
                         ชำระเงิน
-                    </button> */}
+                    </button>
                 </div>
             </div>
         </div>

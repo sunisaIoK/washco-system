@@ -218,7 +218,7 @@ const DetailData = () => {
                   <td className="border px-4 py-2">
                     <button
                       onClick={() => toggleStatus(detail.id, detail.isActive)}
-                      className={`px-4 py-1 rounded ${detail.isActive ? 'bg-green-300 text-green-80' : 'bg-red-100 text-red-800'}`}
+                      className={`px-4 py-1 rounded ${detail.isActive ? 'bg-green-300 text-green-800' : 'bg-red-100 text-red-800'}`}
                     >
                       {detail.isActive ? 'เปิด' : 'ปิด'}
                     </button>
@@ -267,7 +267,7 @@ const DetailData = () => {
               <ul>
                 {selectedDetail.fields.map((field, index) => (
                   <li key={index}>
-                    {field.fieldName}: {field.fieldValue}
+                    {field.fieldValue}
                   </li>
                 ))}
               </ul>
@@ -324,17 +324,6 @@ const DetailData = () => {
                 <label className="block font-semibold mb-2">รายการ:</label>
                 {selectedDetail.fields.map((field, index) => (
                   <div key={index} className="flex gap-2 mb-2 items-center">
-                    <input
-                      type="text"
-                      value={field.fieldName}
-                      onChange={(e) => {
-                        const updatedFields = [...selectedDetail.fields];
-                        updatedFields[index].fieldName = e.target.value;
-                        setSelectedDetail({ ...selectedDetail, fields: updatedFields });
-                      }}
-                      className="flex-1 border px-3 py-2 rounded"
-                      placeholder="ชื่อฟิลด์"
-                    />
                     <input
                       type="text"
                       value={field.fieldValue}
