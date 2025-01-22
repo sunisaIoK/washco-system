@@ -79,6 +79,7 @@ const menuItems = [
     { href: "/page/admin/dashboard", icon: "mdi:home", label: "แดชบอร์ด" },
     { href: "/page/data/service", icon: "mdi:server", label: "จัดการข้อมูลบริการ" },
     { href: "/page/data/detail", icon: "mdi:file-document-edit", label: "จัดการข้อมูลรายละเอียด" },
+    { href: "/page/admin/dashboard/list", icon: "mdi:bell", label: "รายการคำสั่งซื้อ" },
 ];
 
 // Sidebar Item Component

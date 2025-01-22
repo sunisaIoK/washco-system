@@ -27,8 +27,8 @@ export const GET = async () => {
 // เพิ่มหรือแก้ไขข้อมูล
 export const POST = async (req: NextRequest) => {
   try {
-    const { id, nameService, description, price } = await req.json();
-    if (!nameService || !description || !price) {
+    const { id, nameService, description, hour, price } = await req.json();
+    if (!nameService || !description || !hour || !price) {
       return NextResponse.json(
         { error: 'กรุณากรอกข้อมูลให้ครบถ้วน' },
         { status: 400 }
@@ -38,6 +38,7 @@ export const POST = async (req: NextRequest) => {
     const newService = {
       nameService,
       description,
+      hour: Number(hour),
       price: Number(price),
       isActive: true,
       updatedAt: new Date(),

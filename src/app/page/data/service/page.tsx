@@ -7,6 +7,7 @@ interface Service {
   id: string;
   nameService: string;
   description: string;
+  hour: number;
   price: number;
   isActive: boolean;
 }
@@ -121,7 +122,7 @@ const ServiceData = () => {
     <main className="p-6 mb-72">
       <div className="mb-4 flex justify-between items-center mr-24 px-3 ml-24 pl-2">
         <h1 className="text-2xl font-bold ">จัดการข้อมูลบริการ</h1>
-        <a href="/page/service/createService">
+        <a href="/page/data/service/createService">
           <button className="bg-blue-500 hover:bg-blue-600 ml-72  text-white px-4 py-2 rounded flex items-center">
             <Icon icon="ph:plus-bold" className="mr-2" />
             เพิ่มบริการ
@@ -141,6 +142,7 @@ const ServiceData = () => {
                   <tr className="bg-gray-100">
                     <th className="border px-4 py-2">ชื่อบริการ</th>
                     <th className="border px-4 py-2">รายละเอียด</th>
+                    <th className="border px-4 py-2">ชั่วโมง</th>
                     <th className="border px-4 py-2">ราคา</th>
                     <th className="border px-4 py-2">สถานะ</th>
                     <th className="border px-4 py-2">การดำเนินการ</th>
@@ -148,6 +150,7 @@ const ServiceData = () => {
                 </thead>
                 <tbody>
                   <tr className="text-center animate-pulse">
+                    <td className="border px-4 py-2 ">&nbsp;</td>
                     <td className="border px-4 py-2 ">&nbsp;</td>
                     <td className="border px-4 py-2 ">&nbsp;</td>
                     <td className="border px-4 py-2 ">&nbsp;</td>
@@ -180,6 +183,7 @@ const ServiceData = () => {
                   <tr className="bg-gray-100  text-xl">
                     <th className="border px-4 py-2">ชื่อบริการ</th>
                     <th className="border px-4 py-2">รายละเอียด</th>
+                    <th className="border px-4 py-2">ชั่วโมง</th>
                     <th className="border px-4 py-2">ราคา</th>
                     <th className="border px-4 py-2">สถานะ</th>
                     <th className="border px-4 py-2">การดำเนินการ</th>
@@ -224,6 +228,23 @@ const ServiceData = () => {
                         )}
                       </td>
                       {/* ราคา */}
+                      <td className="border px-4 py-2">
+                        {editingId === service.id ? (
+                          <input
+                            type="number"
+                            value={tempService.hour || ""}
+                            onChange={(e) =>
+                              setTempService({
+                                ...tempService,
+                                hour: parseFloat(e.target.value) || 0,
+                              })
+                            }
+                            className="border px-2 py-1 w-full"
+                          />
+                        ) : (
+                          `${service.hour} ชั่วโมง`
+                        )}
+                      </td>
                       <td className="border px-4 py-2">
                         {editingId === service.id ? (
                           <input

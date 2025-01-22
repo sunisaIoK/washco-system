@@ -91,7 +91,7 @@ const Delivery = () => {
       }
 
       const addedDelivery = await response.json();
-      setDelivery((prevDeliverys) => [...Delivery, addedDelivery]);
+      setDelivery((prevDeliverys) => [...prevDeliverys, addedDelivery]);
       await fetchDeliverys();
       alert('เพิ่มข้อมูลเรียบร้อย');
       // รีเซ็ตฟอร์มเพิ่มเดลิเวอรี่
@@ -147,7 +147,7 @@ const Delivery = () => {
 
       // อัปเดตรายการในหน้าจอ
       setDelivery((prevDelivery) =>
-        Delivery.map((Delivery) =>
+        prevDelivery.map((Delivery) =>
           Delivery.id === updatedDelivery.id ? updatedDelivery : Delivery
         )
       );

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@iconify/react": "^5.2.0",
+    "@radix-ui/react-slot": "^1.1.1",
     "@stripe/stripe-js": "^5.5.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",

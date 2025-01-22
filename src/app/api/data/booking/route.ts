@@ -1,11 +1,11 @@
 'use server'
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import firestore from "../../../../../utils/database";
 import DB_COLLECTIONS from "../../../../../utils/constant";
 
 
-export const GET = async (req: NextRequest) => {
+export const GET = async () => {
     try {
         //ดึงข้อมูล จาก collection  แบบหลาย col
         const services = new firestore();
@@ -39,7 +39,7 @@ export const GET = async (req: NextRequest) => {
         );
     } catch (error) {
         return NextResponse.json(
-            { error: 'เกิดข้อมูลผิดพลาด' }
+            { error:  error },
         );
     }
 };

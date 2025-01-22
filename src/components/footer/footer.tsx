@@ -1,37 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
-// import Hr from "../hr";
-// import { Icon } from '@iconify/react';
-// import jwtDecode from "jwt-decode";
+import Hr from "../hr";
+import { Icon } from '@iconify/react';
+import { useSession } from "next-auth/react";
 
 const Footer = () => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-  // ใช้ useEffect เพื่อตรวจสอบ Role จาก JWT Token
-  useEffect(() => {
-    // const token = localStorage.getItem("token"); // ดึง JWT Token จาก LocalStorage
-    // if (token) {
-    //   try {
-    //     const decoded: any = jwtDecode(token); // ถอดรหัส JWT Token
-    //     console.log("Decoded Token:", decoded); // Debug JWT
-    //     setIsAdmin(decoded.role === "admin"); // ตรวจสอบว่าผู้ใช้เป็น Admin หรือไม่
-    //   } catch (err) {
-    //     console.error("Error decoding JWT Token:", err);
-    //     setIsAdmin(false); // หากถอดรหัสผิดพลาด ตั้งค่าไม่เป็น Admin
-    //   }
-    // }
-  }, []);
-
-  // ซ่อน Footer หากเป็น Admin หรือไม่มี Token
-  if (isAdmin) return null;
+    const { data: session } = useSession(); // ใช้เพื่อดึงข้อมูล Session
+    const user = session?.user; // ข้อมูลผู้ใช้จาก session
+    const isAdmin = user?.role === "admin"; // ตรวจสอบ role
 
   return (
     <>
-      <div className="min-w-screen mt-24">
-        {/* <Hr /> */}
+     { !isAdmin && (
+      <>
+       <div className="min-w-screen mt-24">
+        <Hr />
       </div>
       <nav className="flex justify-between bg-white">
         <div className="flex flex-col gap-4 md:text-base text-sm lg:text-lg p-6">
@@ -45,7 +31,7 @@ const Footer = () => {
             />
           </Link>
           <div className="flex gap-4 color-icon mt-5">
-            {/* <Link href="https://www.facebook.com/">
+            <Link href="https://www.facebook.com/">
               <Icon icon="fa6-brands:facebook" width={25} height={20} />
             </Link>
             <Link href="https://twitter.com/?lang=th">
@@ -56,7 +42,7 @@ const Footer = () => {
             </Link>
             <Link href="https://www.youtube.com/">
               <Icon icon="fa6-brands:youtube" width={25} height={20} />
-            </Link> */}
+            </Link>
           </div>
         </div>
 
@@ -92,6 +78,8 @@ const Footer = () => {
           </div>
         </div>
       </nav>
+      </>
+     )}
     </>
   );
 };
