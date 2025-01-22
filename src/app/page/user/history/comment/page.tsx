@@ -1,7 +1,6 @@
 'use client'
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Icon } from '@iconify/react'
 import Star from '@/components/Star'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
@@ -23,6 +22,7 @@ const CommentPage = () => {
         if (!nameService || !description || !price) {
             setError('กรุณากรอกข้อมูลให้ครบถ้วน')
             setIsLoading(false)
+            setIsActive(true)
             return
         }
 

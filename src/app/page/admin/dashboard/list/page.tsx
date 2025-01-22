@@ -21,7 +21,7 @@ interface Order {
     isActive: boolean;
 }
 
-const list = () => {
+const List = () => {
     const [orders, setOrders] = useState<Order[]>([]); // เก็บข้อมูลคำสั่งจอง
     const [loading, setLoading] = useState(true); // สถานะการโหลดข้อมูล
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -77,14 +77,15 @@ const list = () => {
         setIsViewModalOpen(false);
     };
     // กรองเฉพาะบริการที่เปิดการใช้งาน
-    const activeServices = orders.filter((order) => orders);
+    const activeServices = orders.filter(() => orders);
 
     return (
         <main className="p-7">
             <div className="mb-4 flex items-center">
                 <h1 className="text-2xl font-bold mb-4">รายการคำสั่งจอง</h1>
             </div>
-            {orders.length > 0 && (
+          {loading && <p>Loading...</p>}
+          {orders.length > 0 && (
                     <span className="text-gray-700 text-sm " >
                     พบรายการทั้งหมด: {activeServices.length} รายการ
                 </span>
@@ -212,4 +213,4 @@ const list = () => {
     );
 };
 
-export default list;
+export default List;

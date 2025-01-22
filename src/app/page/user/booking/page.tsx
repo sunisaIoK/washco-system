@@ -4,9 +4,6 @@ import React, { useEffect, useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { loadStripe } from '@stripe/stripe-js';
-import { useRouter, useSearchParams } from "next/navigation";
-import { NextResponse } from "next/server";
-import { Button } from "@/components/ui/button";
 import { useSession } from "next-auth/react";
 
 interface ServiceData {
@@ -37,10 +34,25 @@ interface DetailData {
     isActive: boolean;
 }
 
+interface ConfirmedOrder {
+    services: ServiceData | null;
+    details: DetailField[];
+    delivery: DeliveryData | null;
+    totalPrice: number;
+    hotelName: string;
+    roomNumber: string;
+    additionalDetails: string;
+    name: string;
+    phone: string;
+    pickupDate: string | null;
+    deliveryDate: string | null;
+    customerId: string | null;
+}
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY as string);
 
 const BookingPage = () => {
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
 
     const [services, setServices] = useState<ServiceData[]>([]);
     const [deliveries, setDeliveries] = useState<DeliveryData[]>([]);
@@ -50,17 +62,17 @@ const BookingPage = () => {
     }>({});
     const [pickupDate, setPickupDate] = useState<Date | null>(null);
     const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
-    const [confirmationTime, setConfirmationTime] = useState<Date | null>(null);
-    const [pickupTime, setPickupTime] = useState<Date | null>(null);
-    const [deliveryTime, setDeliveryTime] = useState<Date | null>(null);
+    // const [confirmationTime, setConfirmationTime] = useState<Date | null>(null);
+    // const [pickupTime, setPickupTime] = useState<Date | null>(null);
+    // const [deliveryTime, setDeliveryTime] = useState<Date | null>(null);
     const [selectedServices, setSelectedServices] = useState<ServiceData | null>(null);
     const [selectedDetails, setSelectedDetails] = useState<DetailField[]>([]);
     const [selectedDelivery, setSelectedDelivery] = useState<DeliveryData | null>(null);
     const [totalPrice, setTotalPrice] = useState<number>(0); // ราคารวม
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [confirmedOrder, setConfirmedOrder] = useState<any>(null);
-    const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [confirmedOrder, setConfirmedOrder] = useState<ConfirmedOrder | null>(null);
+    // const [paymentSuccess, setPaymentSuccess] = useState(false);
 
     const [formData, setFormData] = useState({
         hotelName: '',
@@ -153,33 +165,39 @@ const BookingPage = () => {
             //     alert('กรุณาชำระเงินก่อนยืนยันคำสั่งซื้อ');
             //     return;
             // }
-
             // จัดเตรียมข้อมูลสำหรับบันทึก
-            const confirmedData = {
+            const newConfirmedOrder: ConfirmedOrder = {
                 services: selectedServices,
                 details: selectedDetails,
                 delivery: selectedDelivery,
                 totalPrice,
-                ...formData, // ข้อมูลติดต่อ (ที่อยู่, ชื่อ, อีเมล, เบอร์โทร)
+                hotelName: formData.hotelName,
+                roomNumber: formData.roomNumber,
+                additionalDetails: formData.additionalDetails,
+                name: formData.name,
+                phone: formData.phone,
                 pickupDate: pickupDate?.toISOString() || null,
                 deliveryDate: deliveryDate?.toISOString() || null,
                 customerId: session?.user?.id || null,
             };
 
-            if (!confirmedData.customerId) {
+            setConfirmedOrder(newConfirmedOrder); // อัปเดตค่า
+            console.log('Confirmed Order:', confirmedOrder); // ตรวจสอบค่าที่อัปเดต
+
+            if (!newConfirmedOrder.customerId) {
                 alert("กรุณาล็อกอินก่อนทำรายการ");
                 return;
             }
 
             // ตรวจสอบว่ามีข้อมูลครบถ้วนหรือไม่
             if (
-                !confirmedData.services ||
-                confirmedData.details.length === 0 ||
-                !confirmedData.delivery ||
-                !confirmedData.pickupDate ||
-                !confirmedData.deliveryDate ||
-                !confirmedData.name ||
-                !confirmedData.phone
+                !newConfirmedOrder.services ||
+                newConfirmedOrder.details.length === 0 ||
+                !newConfirmedOrder.delivery ||
+                !newConfirmedOrder.pickupDate ||
+                !newConfirmedOrder.deliveryDate ||
+                !newConfirmedOrder.name ||
+                !newConfirmedOrder.phone
             ) {
                 alert('กรุณาเลือก/กรอกข้อมูลให้ครบถ้วนก่อนยืนยันคำสั่งซื้อ');
                 return;
@@ -189,7 +207,7 @@ const BookingPage = () => {
             const response = await fetch('/api/data/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(confirmedData),
+                body: JSON.stringify(newConfirmedOrder),
             });
 
             if (!response.ok) {
@@ -291,7 +309,7 @@ const BookingPage = () => {
             if (error) {
                 console.error("Stripe Checkout Error:", error);
             } else {
-                setPaymentSuccess(true); // อัปเดตสถานะการชำระเงินสำเร็จ
+                // setPaymentSuccess(true); // อัปเดตสถานะการชำระเงินสำเร็จ
                 alert("ชำระเงินสำเร็จแล้ว!");
             }
         } catch (error) {
@@ -425,30 +443,30 @@ const BookingPage = () => {
                             ))
                         )}
                     </div>
-                      {/* เลือกวันที่ */}
-                      <div className="p-6">
-                                    <h2 className="text-xl font-semibold mb-4">เลือกวันที่รับผ้า</h2>
-                                    <DatePicker
-                                        selected={pickupDate}
-                                        onChange={(date) => setPickupDate(date)}
-                                        minDate={new Date()}
-                                        dateFormat="yyyy-MM-dd HH:mm"
-                                        showTimeSelect
-                                        timeFormat="HH:mm"
-                                        className="border rounded p-2"
-                                        placeholderText="เลือกวันที่รับผ้า"
-                                    />
-                                </div>
+                    {/* เลือกวันที่ */}
+                    <div className="p-6">
+                        <h2 className="text-xl font-semibold mb-4">เลือกวันที่รับผ้า</h2>
+                        <DatePicker
+                            selected={pickupDate}
+                            onChange={(date) => setPickupDate(date)}
+                            minDate={new Date()}
+                            dateFormat="yyyy-MM-dd HH:mm"
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            className="border rounded p-2"
+                            placeholderText="เลือกวันที่รับผ้า"
+                        />
+                    </div>
 
-                                {/* วันที่ส่งคืนผ้าคำนวณอัตโนมัติ */}
-                                <div className="p-6">
-                                    <h2 className="text-xl font-semibold mb-4">วันที่ส่งคืน (คำนวณอัตโนมัติ)</h2>
-                                    {deliveryDate ? (
-                                        <p className="bg-gray-100 px-3 py-2 rounded">{deliveryDate.toLocaleString()}</p>
-                                    ) : (
-                                        <p className="text-gray-500">ยังไม่ได้เลือกวันที่รับผ้า</p>
-                                    )}
-                                </div>
+                    {/* วันที่ส่งคืนผ้าคำนวณอัตโนมัติ */}
+                    <div className="p-6">
+                        <h2 className="text-xl font-semibold mb-4">วันที่ส่งคืน (คำนวณอัตโนมัติ)</h2>
+                        {deliveryDate ? (
+                            <p className="bg-gray-100 px-3 py-2 rounded">{deliveryDate.toLocaleString()}</p>
+                        ) : (
+                            <p className="text-gray-500">ยังไม่ได้เลือกวันที่รับผ้า</p>
+                        )}
+                    </div>
 
                     <div className="p-6">
                         <h2 className="text-xl font-semibold mb-4">ที่อยู่และข้อมูลติดต่อ</h2>

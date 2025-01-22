@@ -35,7 +35,7 @@ export async function POST(req: Request) {
           cancel_url: `${req.headers.get("origin")}/`,
       });
 
-      return NextResponse.json({ id: session.id, message: "ชำระเงินสำเร็จ" });  } catch (error: any) {
+      return NextResponse.json({ id: session.id, message: "ชำระเงินสำเร็จ" });  } catch (error) {
       console.error("Error creating Stripe Checkout Session:", error);
       return NextResponse.json(
           { error: "Failed to create Stripe Checkout Session" },
