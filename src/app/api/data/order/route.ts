@@ -16,11 +16,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id: newOrder.id, success: true }); // ตอบกลับ ID คำสั่งซื้อ
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to save order' }, { status: 500 });
+    return NextResponse.json({ error: error}, { status: 500 });
   }
 }
 
-export const GET = async (req: { url: string | URL; }) => {
+export const GET = async (req: NextRequest) => {
     const searchParams = new URL(req.url).searchParams;
     const customerId = searchParams.get('customerId');
 
@@ -49,7 +49,7 @@ export const GET = async (req: { url: string | URL; }) => {
         
         return NextResponse.json({ Orders: data }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: "เกิดข้อผิดพลาดในการดึงข้อมูล" }, { status: 500 });
+        return NextResponse.json({ error: error }, { status: 500 });
     }
 };
 

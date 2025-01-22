@@ -1,7 +1,6 @@
 'use client'
 import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { time } from 'console'
 
 const CreatService = () => {
   const [nameService, setNameService] = useState('')
@@ -22,6 +21,7 @@ const CreatService = () => {
     if (!nameService || !description || !hour || !price) {
       setError('กรุณากรอกข้อมูลให้ครบถ้วน')
       setIsLoading(false)
+      setIsActive(true)
       return
     }
 

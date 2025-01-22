@@ -103,6 +103,7 @@ const History = () => {
             <div className="mb-4 flex items-center">
                 <h1 className="text-2xl font-bold mb-4">รายการคำสั่งจอง</h1>
             </div>
+            {loading && <p className="text-center">กําลังโหลดข้อมูล...</p>}
             {/* แสดงข้อมูลคำสั่งจอง */}
             {orders.length > 0 ? (
                 <table className="border-collapse text-center border border-gray-400 w-full mt-4">

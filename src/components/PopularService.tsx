@@ -42,7 +42,7 @@ const PopularService = () => {
     const [sales, setSales] = useState<Orders[]>([]);
     const router = useRouter();
     const [startMonth, setStartMonth] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [endDate] = useState<Date | null>(null);
 
     useEffect(() => {
         const fetchAllData = async () => {
