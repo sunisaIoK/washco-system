@@ -1,9 +1,9 @@
 'use client'
 import React, { useState } from 'react'
-import { Button } from 'src/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Icon } from '@iconify/react'
-import Star from 'src/components/star/Star'
-import { Card, CardContent, CardHeader } from 'src/components/ui/card'
+import Star from '@/components/Star'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 const CommentPage = () => {
     const [nameService, setNameService] = useState('')
