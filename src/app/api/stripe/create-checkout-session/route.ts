@@ -31,8 +31,8 @@ export async function POST(req: Request) {
           payment_method_types: ["card"],
           line_items: lineItems,
           mode: "payment",
-          success_url: `${req.headers.get("origin")}/page/booking?succes=true`,
-          cancel_url: `${req.headers.get("origin")}/page/booking?cancel=true`,
+          success_url: `${req.headers.get("origin")}/page/user/booking`,
+          cancel_url: `${req.headers.get("origin")}/`,
       });
 
       return NextResponse.json({ id: session.id, message: "ชำระเงินสำเร็จ" });  } catch (error: any) {
