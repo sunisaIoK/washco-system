@@ -148,52 +148,6 @@ const CreateDetail = () => {
           />
           บาท
         </div>
-        {/* เปิดใช้งานบริการ */}
-        <div className="mb-6 flex items-center">
-          <input
-            id="isActive"
-            type="checkbox"
-            className="mr-2"
-            checked={isActive}
-            onChange={(e) => setIsActive(e.target.checked)}
-          />
-          <label htmlFor="isActive" className="text-md font-medium">
-            เปิดใช้งานรายละเอียด
-          </label>
-          <style jsx>{`
-                        input[type='checkbox'] {
-                          appearance: none;
-                          width: 1.25rem;
-                          height: 1.25rem;
-                          border: 1px solid #ccc;
-                          border-radius: 0.25rem;
-                          background-color: white;
-                          transition: all 0.3s ease;
-                          cursor: pointer;
-                          position: relative;
-                        }
-
-                        input[type='checkbox']:checked {
-                          background-color: #22c55e; /* สีเขียว */
-                          border-color: #22c55e;
-                        }
-
-                        input[type='checkbox']:checked::after {
-                          content: '✔';
-                          position: absolute;
-                          top: 0;
-                          left: 0;
-                          width: 100%;
-                          height: 100%;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          font-size: 1rem;
-                          color: white;
-                        }
-                      `}
-            </style>
-        </div>
         {/* ปุ่มบันทึก */}
         <div className="flex justify-center mb-4">
           <button
