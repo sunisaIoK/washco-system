@@ -1,6 +1,6 @@
 'use client';
 
-import { useState} from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { signOut, useSession } from "next-auth/react";
@@ -78,7 +78,8 @@ export default Sidebar;
 const menuItems = [
     { href: "/page/admin/dashboard", icon: "mdi:home", label: "แดชบอร์ด" },
     { href: "/page/data/service", icon: "mdi:server", label: "จัดการข้อมูลบริการ" },
-    { href: "/page/data/detail", icon: "mdi:file-document-edit", label: "จัดการข้อมูลรายละเอียด" },
+    { href: "/page/data/detail", icon: "mdi:file-document", label: "จัดการข้อมูลรายละเอียด" },
+    { href: "/page/data/delivery", icon: "tdesign:undertake-delivery-filled", label: "จัดการข้อมูลการรับ-ส่ง" },
     { href: "/page/admin/dashboard/list", icon: "mdi:bell", label: "รายการคำสั่งซื้อ" },
 ];
 
