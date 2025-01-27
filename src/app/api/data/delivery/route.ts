@@ -1,8 +1,8 @@
 'use server';
 
 import { NextRequest, NextResponse } from 'next/server';
-import firestore from '../../../../../utils/database';
-import DB_COLLECTIONS from '../../../../../utils/constant';
+import firestore from '@/utils/database';
+import DB_COLLECTIONS from '@/utils/constant';
 
 // สร้าง Type สำหรับข้อมูล
 interface Delivery {
