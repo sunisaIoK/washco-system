@@ -5,13 +5,13 @@ import Image from 'next/image';
 
 const SopPage = () => {
     return (
-        <main className="p-6 min-w-screen mb-2 justify-center items-center">
+        <main className="p-8 min-w-screen mb-2 justify-center items-center" style={{ marginTop: '-9%'}}>
             <div className="flex justify-center items-center mr-24 px-3 ml-24 pl-2">
                 <h1 className="text-2xl font-bold mb-9">ขั้นตอนการให้บริการ</h1>
             </div>
             <div className="workflow-container mt-5">
                 {/* แถวบน */}
-                <div className="ml-96 flex flex-row items-center">
+                <div className="ml-96 flex flex-row items-center" style={{marginLeft: "40%"}}>
                     {/* จอง */}
                     <div className="flex flex-col md:flex-row justify-between">
                         <div className='step step-top p-3'>
@@ -24,7 +24,7 @@ const SopPage = () => {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-row items-center" style={{marginLeft: "-35%"}}>
+                <div className="flex flex-row items-center" style={{marginLeft: "-50%"}}>
                     <div className=' '>
                         <Image src="/assets/images/serviceRead/receivecloth.png" alt="booking" width={400} height={200} className="object-contain max-w-2xl" />
                     </div>
@@ -36,7 +36,7 @@ const SopPage = () => {
                     </div>
                 </div>
                 {/* แถวล่าง */}
-                <div className="ml-96 flex flex-row items-center justify-between">
+                <div className=" flex flex-row items-center justify-between" style={{marginLeft: "40%"}}>
                     {/* รับ */}
                     <div className='step step-top p-3'>
                         <div className="step-circle font-bold text-3xl text-blue-500 mb-2">3</div>
@@ -47,7 +47,7 @@ const SopPage = () => {
                         <Image src="/assets/images/serviceRead/laundry.png" alt="booking" width={400} height={200} className="object-contain max-w-2xl" />
                     </div>
                 </div>
-                <div className="flex flex-row items-center justify-between" style={{marginLeft: "-35%"}}>
+                <div className="flex flex-row items-center justify-between" style={{marginLeft: "-50%"}}>
                     <div className=''>
                         <Image src="/assets/images/serviceRead/sendback.png" alt="booking" width={400} height={200} className="object-contain max-w-2xl" />
                     </div>
