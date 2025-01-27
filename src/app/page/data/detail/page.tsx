@@ -24,6 +24,8 @@ const DetailData = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const itemsPerPage = 5; // จำนวนรายการต่อหน้า
+  const [currentPage, setCurrentPage] = useState(1); // หน้าปัจจุบันสำหรับตาราง "กำลังซักรีด"
 
   const fetchDetails = async () => {
     try {
@@ -38,7 +40,7 @@ const DetailData = () => {
       console.error('Error fetching details:', err);
       setError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -66,7 +68,6 @@ const DetailData = () => {
       setLoading(false);
     }
   };
-
   const handleDelete = async (id: string) => {
     const confirmDelete = confirm('คุณแน่ใจหรือไม่ว่าจะลบรายการนี้?');
     if (!confirmDelete) return;
@@ -138,19 +139,27 @@ const DetailData = () => {
     setIsEditModalOpen(false);
   };
 
+  const sortedOrders = details.sort((a, b) => a.nameDetail.localeCompare(b.nameDetail, 'th'));
+  console.log(sortedOrders);
+  const activeDetails = details.filter(() => details);
+ // ฟังก์ชันคำนวณหน้า
+ const indexOfLastItem = currentPage * itemsPerPage;
+ const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+ const currentDetails = details.slice(indexOfFirstItem, indexOfLastItem);
+  // เปลี่ยนหน้า
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   return (
     <main className="p-7 mr-40 ml-24">
       <div className="mb-4 flex justify-between items-center ">
-        <h1 className="text-2xl font-bold mb-4">จัดการข้อมูลรายละเอียด</h1>
-        <a href="/page/detail/createDetail">
+        <h1 className="text-2xl font-bold">จัดการข้อมูลรายละเอียด</h1>
+        <a href="/page/data/detail/createDetail">
           <button className="bg-blue-500 text-white px-4 py-2 rounded">
             เพิ่มรายละเอียด
           </button>
         </a>
       </div>
-
       {error && <div className="text-red-500 my-4">{error}</div>}
-
       {loading ? (
         // Skeleton for loading
         <div className="flex justify-center mt-6 space-y-4 animate-pulse items-center">
@@ -197,7 +206,12 @@ const DetailData = () => {
         </div>
       ) : (
         <div className="overflow-x-auto mt-6">
-          <table className="w-full border-collapse border border-gray-300 text-sm">
+          {activeDetails.length > 0 && (
+            <span className="text-blue-800 text-sm " >
+              พบรายละเอียดทั้งหมด: {activeDetails.length} รายการ
+            </span>
+          )}
+          <table className="w-full border-collapse border mt-2 border-gray-300 text-sm">
             <thead>
               <tr className="bg-gray-100 text-xl">
                 <th className="border px-4 py-2">ชื่อรายละเอียด</th>
@@ -208,8 +222,8 @@ const DetailData = () => {
               </tr>
             </thead>
             <tbody>
-              {details.map((detail) => (
-                <tr key={detail.id} className="text-center text-lg even:bg-gray-50 hover:bg-gray-100">
+              {currentDetails.map((detail) => (
+                <tr key={detail.id} className="bg-white text-center text-lg even:bg-gray-50 hover:bg-gray-100">
                   {/* ชื่อรายละเอียด */}
                   <td className="border px-4 py-2">{detail.nameDetail}</td>
                   {/* ราคา */}
@@ -218,7 +232,10 @@ const DetailData = () => {
                   <td className="border px-4 py-2">
                     <button
                       onClick={() => toggleStatus(detail.id, detail.isActive)}
-                      className={`px-4 py-1 rounded ${detail.isActive ? 'bg-green-300 text-green-800' : 'bg-red-100 text-red-800'}`}
+                      className={`px-4 py-1 rounded ${detail.isActive
+                        ? "hover:bg-green-600 hover:text-white text-green-700  bg-green-200"
+                        : "hover:bg-red-600 hover:text-white text-red-700  bg-red-200"
+                        }`}
                     >
                       {detail.isActive ? 'เปิด' : 'ปิด'}
                     </button>
@@ -251,6 +268,20 @@ const DetailData = () => {
               ))}
             </tbody>
           </table>
+          <div className="flex justify-center mt-4">
+            {Array.from({ length: Math.ceil(details.length / itemsPerPage) }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => paginate(index + 1)}
+                className={`mx-1 px-3 py-1 border rounded ${currentPage === index + 1
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-blue-500 border-blue-500"
+                  }`}
+              >
+                {index + 1}
+              </button>
+            ))}
+          </div>
         </div>
       )}
       {/* Modal for Viewing */}

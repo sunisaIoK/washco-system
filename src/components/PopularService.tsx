@@ -94,8 +94,22 @@ const PopularService = () => {
         datasets: [{
             label: 'บริการที่ได้รับความนิยม',
             data: serviceData,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(255, 159, 64, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(2, 154, 255, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(201, 203, 207, 0.2)'
+            ],
+            borderColor: [
+                'rgb(255, 99, 132)',
+                'rgb(220, 110, 0)',
+                'rgb(75, 192, 192)',
+                'rgb(0, 153, 255)',
+                'rgb(153, 102, 255)',
+                'rgb(201, 203, 207)'
+            ],
             borderWidth: 1
         }]
     };
@@ -106,7 +120,12 @@ const PopularService = () => {
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false,
                 }
             }
         },
@@ -128,9 +147,24 @@ const PopularService = () => {
                         className="w-6/12 p-1 rounded "
                     />
                 </div>
-                <div className="flex flex-col items-center p-1 rounded-lg">
+                <div className="flex  flex-col items-center pl-9 pr-9 pt-5 pb-5 p-1 rounded-lg">
                     {serviceData.length > 0 ? (
-                        <Bar data={data} options={config.options} />
+                        <main className="flex">
+                            <div>
+                                {labels.map((label, index) => (
+                                    <div key={index} className="flex items-center mb-4 mr-9">
+                                        <div
+                                            className="w-6 h-6 rounded-full mr-4"
+                                            style={{ backgroundColor: config.data.datasets[0].backgroundColor[index] }}
+                                        >
+                                            
+                                        </div>
+                                        <p className="text-lg font-semibold">{label}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <Bar data={data} options={config.options} style={{ width: '100px', height: '300px' }} />
+                        </main>
                     ) : (
                         <p className="text-gray-500">ไม่มีบริการที่ได้รับความนิยมในช่วงเวลานี้</p>
                     )}

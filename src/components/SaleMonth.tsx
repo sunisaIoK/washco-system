@@ -6,7 +6,6 @@ import { Bar } from 'react-chartjs-2';
 import { Chart, registerables as registered } from 'chart.js';
 import { useRouter } from "next/navigation";
 
-// ลงทะเบียน ArcElement และ Tooltip
 Chart.register(...registered);
 
 interface ServiceData {
@@ -30,7 +29,6 @@ interface DetailField {
     price?: number;
 }
 
-// ชนิดข้อมูลสำหรับข้อมูลที่ดึงมา
 interface Orders {
     id: string;
     services: ServiceData | null;
@@ -56,7 +54,6 @@ const MonthSales = () => {
                     throw new Error('ไม่สามารถดึงข้อมูลได้');
                 }
                 const salesData = await response.json();
-                console.log(salesData.Orders);  // ตรวจสอบข้อมูลคำสั่งซื้อ
                 setSales(salesData.Orders || []);
                 router.refresh();
             } catch (error) {
@@ -67,7 +64,6 @@ const MonthSales = () => {
         fetchAllData();
     }, [router]);
 
-    // ฟังก์ชันนับยอดขายแยกตามเดือน
     const countSalesByMonth = (sales: Orders[]) => {
         const saleByMonth: { [key: string]: { total: number; count: number } } = {};
         sales.forEach(sale => {
@@ -78,71 +74,72 @@ const MonthSales = () => {
                 saleByMonth[month] = { total: 0, count: 0 };
             }
             saleByMonth[month].total += totalSale;
-            saleByMonth[month].count += 1; // นับจำนวนคำสั่งซื้อ
+            saleByMonth[month].count += 1;
         });
         return saleByMonth;
     };
 
-    // ฟิลเตอร์คำสั่งซื้อ
     const filteredOrders = sales.filter((sale) => {
         const orderDate = new Date(sale.createdAt);
         return (!startDate || orderDate >= startDate) && (!endDate || orderDate <= endDate);
-    }); console.log(filteredOrders);
-    // คำนวณจำนวนคำสั่งซื้อโดยแยกตามเดือน
+    });
+
     const saleByMonth = countSalesByMonth(filteredOrders);
-    console.log('saleByMonth:', saleByMonth);
 
     const labels = Object.keys(saleByMonth);
     const totalSalesData = labels.map(month => saleByMonth[month]?.total || 0);
     const orderCountData = labels.map(month => saleByMonth[month]?.count || 0);
+
     const data = {
         labels: labels,
-        datasets: [{
-            label: 'รายได้ต่อเดือน',
-            data: Object.values(totalSalesData),
-            backgroundColor: [
-                'rgb(167, 226, 255)',
-                'rgb(17, 72, 166)',
-                'rgb(13, 135, 212)',
-                'rgb(22, 167, 167)',
-                'rgb(54, 162, 235)',
-                'rgb(102, 148, 255)',
-                'rgb(201, 203, 207)'
-            ],
-            borderColor: [
-                'rgb(0, 179, 255)',
-                'rgb(17, 72, 166)',
-                'rgb(13, 135, 212)',
-                'rgb(22, 167, 167)',
-                'rgb(54, 162, 235)',
-                'rgb(102, 148, 255)',
-                'rgb(201, 203, 207)'
-            ],
-            borderWidth: 1,
-        },
-        {
-            label: 'ยอดคำสั่งซื้อต่อเดือน',
-            data: Object.values(orderCountData),
-            backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 205, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(201, 203, 207, 0.2)'
-            ],
-            borderColor: [
-                'rgb(255, 99, 132)',
-                'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)',
-                'rgb(153, 102, 255)',
-                'rgb(201, 203, 207)'
-            ],
-            borderWidth: 1
-        },]
+        datasets: [
+            {
+                label: 'รายได้ต่อเดือน',
+                data: totalSalesData,
+                backgroundColor: [
+                    'rgb(167, 226, 255)',
+                    'rgb(17, 72, 166)',
+                    'rgb(13, 135, 212)',
+                    'rgb(22, 167, 167)',
+                    'rgb(54, 162, 235)',
+                    'rgb(102, 148, 255)',
+                    'rgb(201, 203, 207)'
+                ],
+                borderColor: [
+                    'rgb(0, 179, 255)',
+                    'rgb(17, 72, 166)',
+                    'rgb(13, 135, 212)',
+                    'rgb(22, 167, 167)',
+                    'rgb(54, 162, 235)',
+                    'rgb(102, 148, 255)',
+                    'rgb(201, 203, 207)'
+                ],
+                borderWidth: 1,
+            },
+            {
+                label: 'ยอดคำสั่งซื้อต่อเดือน',
+                data: orderCountData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(255, 205, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(201, 203, 207, 0.2)'
+                ],
+                borderColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(255, 159, 64)',
+                    'rgb(255, 205, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(54, 162, 235)',
+                    'rgb(153, 102, 255)',
+                    'rgb(201, 203, 207)'
+                ],
+                borderWidth: 1
+            },
+        ],
     };
 
     const config = {
@@ -150,11 +147,13 @@ const MonthSales = () => {
         data: data,
         options: {
             scales: {
-                y: {
-                    beginAtZero: true
-                },
-                x: {
-                    stacked: false
+                y: { beginAtZero: true },
+                x: { stacked: false },
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'รายได้และยอดคำสั่งซื้อต่อเดือน'
                 }
             }
         },
@@ -172,7 +171,6 @@ const MonthSales = () => {
                         startDate={startDate}
                         endDate={endDate}
                         showMonthYearPicker
-                        showMonthDropdown
                         placeholderText="เลือกวันเริ่มต้น"
                         className="w-9/12 p-1 rounded text-center "
                     />
@@ -182,18 +180,28 @@ const MonthSales = () => {
                         selectsEnd
                         startDate={startDate}
                         endDate={endDate}
-                        minDate={startDate || undefined}
                         showMonthYearPicker
-                        showMonthDropdown
                         placeholderText="เลือกวันสิ้นสุด"
                         className="w-9/12 p-1 rounded text-center"
                     />
                 </div>
                 <div className="flex flex-col items-center p-3 rounded-lg pl-6 pr-6">
                     {Object.values(saleByMonth).length > 0 ? (
-                        <>
-                            <Bar data={data} options={config.options} />
-                        </>
+                        <main className="flex">
+                            <div>
+                                {labels.map((label, index) => (
+                                    <div key={index} className="flex items-center mb-4 mr-9">
+                                        <div
+                                            className="w-3.5 h-3.5 rounded-full mr-4"
+                                            style={{ backgroundColor: data.datasets[0].backgroundColor[index] }}
+                                        >
+                                        </div>
+                                        <p className="text-lg font-semibold">{label}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <Bar data={data} options={config.options} style={{ width: '155px', height: '300px' }} />
+                        </main>
                     ) : (
                         <div className="text-gray-500 mx-9 my-9 w-56 text-center">
                             <p className="text-gray-500 h-24">ไม่มีข้อมูลคำสั่งซื้อในช่วงเวลานี้</p>

@@ -2,7 +2,7 @@ import React from 'react';
 
 const Hr = () => {
   return (
-      <div className="bordered-text mb-16"></div>
+      <div className="bordered-text mb-5"></div>
   );
 };
 

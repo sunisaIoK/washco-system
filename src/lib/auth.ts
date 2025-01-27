@@ -4,7 +4,7 @@ import bcrypt from "bcrypt"
 import NextAuth from "next-auth"
 
 //  login.getCollection("users") จะให้ reference ของ collection "users"
-import firestore from "../../utils/database"
+import firestore from "@/utils/database"
 
 export const authOptions: NextAuthOptions = {
   providers: [

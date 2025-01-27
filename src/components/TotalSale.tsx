@@ -162,7 +162,7 @@ const TotalSales = () => {
                 </div>
                 <div className="flex  flex-col items-center pl-9 pr-9 pt-5 pb-5 p-1 rounded-lg">
                     {data.datasets[0].data.length > 0 ? (
-                        <Bar data={data} options={config.options} />
+                        <Bar data={data} options={config.options} style={{ width: '800px', height: '300px' }} />
                     ) : (
                         <div className="text-gray-500 mx-9 my-9 w-56  text-center ">
                             <p className="text-gray-500 h-20">ไม่มีข้อมูลคำสั่งซื้อในช่วงเวลานี้</p>

@@ -1,55 +1,64 @@
-import { NextRequest, NextResponse } from 'next/server'; // ใช้ Firebase Admin SDK ที่เชื่อมฐานข้อมูลไว้แล้ว
-import firestore from '../../../../../utils/database';
-import DB_COLLECTIONS from '../../../../../utils/constant';
+import { NextRequest, NextResponse } from 'next/server';
+import firestore from '@/utils/database';
+import DB_COLLECTIONS from '@/utils/constant';
+export async function POST(req: NextRequest) {
+    try {
+        const orderData = await req.json();
+        console.log('Order Data Received:', orderData);
 
-export async function POST(req: Request) {
-  try {
-    const orderData = await req.json(); // อ่านข้อมูลคำสั่งซื้อจากคำขอ
-    // console.log(orderData);
+        // ตรวจสอบฟิลด์ที่จำเป็น
+        if (!orderData.customerId || !orderData.totalPrice) {
+            return NextResponse.json(
+                { error: 'Missing required fields in order data' },
+                { status: 400 } // Bad Request
+            );
+        }
 
-    // เพิ่มข้อมูลคำสั่งซื้อไปยัง "orders" collection ใน Firestore
-    const ordersCollection = new firestore();
-    const newOrder = await ordersCollection.getCollection(DB_COLLECTIONS.ORDERS).add({
-      ...orderData, // บันทึกข้อมูลทั้งหมดที่ส่งมา
-      createdAt: new Date().toISOString(), // เพิ่มวันที่บันทึกคำสั่งซื้อ
-    });
+        // เชื่อมต่อ Firestore
+        const firestoreInstance = new firestore();
+        const collectionRef = firestoreInstance.getCollection(DB_COLLECTIONS.ORDER);
 
-    return NextResponse.json({ id: newOrder.id, success: true }); // ตอบกลับ ID คำสั่งซื้อ
-  } catch (error) {
-    return NextResponse.json({ error: error}, { status: 500 });
-  }
+        // บันทึกข้อมูลลง Firestore
+        const newOrder = await collectionRef.add({
+            ...orderData,
+            createdAt: new Date().toISOString(), // เพิ่มวันที่สร้างเอกสาร
+        });
+
+        console.log('Order Saved Successfully:', newOrder.id);
+        return NextResponse.json({ id: newOrder.id, success: true }); // ส่ง ID กลับ
+    } catch (error: any) {
+        console.error('Error Saving Order:', error.message);
+        return NextResponse.json(
+            { error: 'Failed to save order', details: error.message },
+            { status: 500 } // Internal Server Error
+        );
+    }
 }
-
 export const GET = async (req: NextRequest) => {
     const searchParams = new URL(req.url).searchParams;
     const customerId = searchParams.get('customerId');
 
     try {
-        // ดึงข้อมูลจาก Firestore
-        const getOrder = new firestore();
-        const ordersCollection = getOrder.getCollection(DB_COLLECTIONS.ORDERS);
-        
-        // สร้าง query สำหรับคำสั่งซื้อของลูกค้า
-        let query 
+        const firestoreInstance = new firestore();
+        const ordersCollection = firestoreInstance.getCollection(DB_COLLECTIONS.ORDER);
 
+        let query;
         if (customerId) {
-            query = ordersCollection.where('customerId', '==', customerId); // ใช้ where ใน query
-        }else{
-          query = ordersCollection;
+            query = ordersCollection.where('customerId', '==', customerId); // กรณีที่ระบุ customerId
+        } else {
+            query = ordersCollection; // ดึงข้อมูลทั้งหมด
         }
 
-        const result = await query.get(); // ดึงข้อมูลจาก query
-        const data = result.docs.map((doc) => ({
-            id: doc.id, // ID ของเอกสาร
-            ...doc.data(), // ข้อมูลภายในเอกสาร
-            detail: doc.data().detail, // ต้องแน่ใจว่ารวม field นี้
+        const result = await query.get();
+        const orders = result.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
         }));
-        console.log(data);
-        
-        
-        return NextResponse.json({ Orders: data }, { status: 200 });
+
+        return NextResponse.json({ Orders: orders }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ error: error }, { status: 500 });
+        console.error('Error fetching orders:', error);
+        return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
     }
 };
 
@@ -67,7 +76,7 @@ export const PATCH = async (req: NextRequest) => {
       }
 
       const updateDetail = new firestore();
-      const docRef = updateDetail.getCollection(DB_COLLECTIONS.ORDERS).doc(id); // อ้างถึงเอกสาร
+      const docRef = updateDetail.getCollection(DB_COLLECTIONS.ORDER).doc(id); // อ้างถึงเอกสาร
       const doc = await docRef.get();
 
       // ตรวจสอบว่ามีเอกสารหรือไม่
