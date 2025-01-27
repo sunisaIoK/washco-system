@@ -132,80 +132,48 @@ body {
   color: #043072;
 }
 
-.signin{
-  border-color: #e9e9e9;
-  border-radius: 5px;
-  padding: 5px;
-}
-.signin:hover{
-  border-color: #ffffff;
-  color: #00388d;
-  box-shadow: 1px 2px 3px 0px rgba(198, 198, 198, 0.25);
-}
-
-.signup{
-  border-color: #e9e9e9;
-  border-radius: 5px;
-  padding: 5px;
-}
-.signup:hover{
-  border-color: #ffffff;
-  color: #00388d;
-  box-shadow: 1px 2px 3px 0px rgba(198, 198, 198, 0.25);
-}
-
 .signout{
+  background-color: #FF0000; /* สีแดง */
+  color: #FFFFFF; /* สีข้อความขาว */
+  border: none;
   border-radius: 5px;
-  padding: 5px;
-}
-.signout:hover{
-  color: red;
-}
-.price{
-  border-color: #e9e9e9;
-  border-radius: 5px;
-  padding: 5px;
-}
-.price:hover{
-  border-color: #ffffff;
-  color: rgb(0, 37, 159);
-  padding: 5px;
-  box-shadow: 1px 2px 3px 0px rgba(198, 198, 198, 0.25);
-}
-.process{
-  border-color: #e9e9e9;
-  border-radius: 5px;
-  padding: 5px;
-}
-.process:hover{
-  border-color: #ffffff;
-  color: rgb(0, 37, 159);
-  padding: 5px;
-  box-shadow: 1px 2px 3px 0px rgba(198, 198, 198, 0.25);
-}
-.reserve{
-  border-color: #e9e9e9;
-  border-radius: 5px;
-  padding: 5px;
-}
-.reserve:hover{
-  border-color: #ffffff;
-  color: rgb(0, 37, 159);
-  padding: 5px;
-  box-shadow: 1px 2px 3px 0px rgba(198, 198, 198, 0.25);
-}
-.history{
-  border-color: #e9e9e9;
-  border-radius: 5px;
-  padding: 5px;
-}
-.history:hover{
-  border-color: #ffffff;
-  color: rgb(0, 37, 159);
-  padding: 5px;
-  box-shadow: 1px 2px 3px 0px rgba(198, 198, 198, 0.25);
+  padding: 10px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
 }
 
+.signout:hover {
+  background-color: #d70000; /* สีแดงเข้มขึ้นเมื่อ hover */
+  bottom: 5px;
+}
+
+.signout:active {
+  background-color: #CC0000; /* สีแดงเข้มเมื่อกดปุ่ม */
+}
+
+.navButton{
+  border-color: #e9e9e9;
+  border-radius: 5px;
+  padding: 1px;
+}
+
+.navButton:hover{
+  padding: 1px;
+  color: rgba(217, 217, 217, 0.916);
+  border-bottom: 2px solid #ffffffc8; /* เส้นใต้ */
+}
+
+.profile{
+  border-color: #e9e9e9;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.profile:hover{
+  color: rgba(177, 177, 177, 0.916);
+  padding: 5px;
+}
 
 /* หน้าของจักการข้อมูล ส่วนแอดมิน */
 .service{
@@ -279,5 +247,51 @@ body {
   font-size: 25px;
   line-height: 60px;
   border-radius: 50%;
-  box-shadow: -2px 2px 2px 2px rgba(0, 0, 0, 0.22);
+  box-shadow: -1px 2px 2px 2px rgba(130, 130, 130, 0.22);
+}
+.booking-container {
+  text-align: center;
+  margin: 20px auto;
+}
+
+.service-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.card {
+  padding: 15px;
+  border-bottom: 2px solid #ddd; /* เส้นใต้ */
+  text-align: center;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.card:hover {
+  border-bottom: 2px solid #007bff; /* เส้นใต้เปลี่ยนสีเมื่อ Hover */
+  background-color: #f9f9f9; /* เปลี่ยนสีพื้นหลังเล็กน้อย */
+}
+
+.card-time {
+  padding: 5px;
+  border-bottom: 2px solid #b8e0ff; /* เส้นใต้ */
+  text-align: center;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.card-time:hover {
+  border-bottom: 2px solid #007bff; /* เส้นใต้เปลี่ยนสีเมื่อ Hover */
+  background-color: #f9f9f9; /* เปลี่ยนสีพื้นหลังเล็กน้อย */
+}
+
+h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
 }

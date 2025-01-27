@@ -1,8 +1,8 @@
 'use server'
 
 import { NextResponse } from "next/server";
-import firestore from "../../../../../utils/database";
-import DB_COLLECTIONS from "../../../../../utils/constant";
+import firestore from "@/utils/database";
+import DB_COLLECTIONS from "@/utils/constant";
 
 
 export const GET = async () => {

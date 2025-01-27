@@ -17,7 +17,7 @@ export const metadata = {
 export default function RootLayout({ children }: Props) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-gray-100">
         <AuthProvider>
           <Navbar />
           <div className="flex flex-col md:flex-row">
