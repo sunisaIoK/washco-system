@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
-import firestore from '../../../../../utils/database';
+import firestore from '@/utils/database';
 
 export const POST = async (req: Request) => {
     try {
