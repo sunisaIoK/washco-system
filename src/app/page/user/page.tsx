@@ -81,55 +81,61 @@ const Profile = () => {
         <div className='p-9 mt-7'>
           <Tap />
         </div>
-        <div className='p-5 mt-16 bg-white w-9/12 rounded-lg'>
-          {session ? (
-            <div className='flex flex-col'>
-              {isEditing ? (
-                <>
-                  <label className='text-lg'>ชื่อผู้ใช้:</label>
-                  <input
-                    type='text'
-                    value={editedData?.name || ''}
-                    onChange={(e) => setEditedData({ ...editedData!, name: e.target.value })}
-                    className='border rounded p-2 mb-4'
-                  />
-                  <label className='text-lg'>อีเมล:</label>
-                  <input
-                    type='email'
-                    value={editedData?.email || ''}
-                    onChange={(e) => setEditedData({ ...editedData!, email: e.target.value })}
-                    className='border rounded p-2 mb-4'
-                  />
-                  <button
-                    onClick={handleUpdate}
-                    className='bg-blue-500 text-white px-4 py-2 rounded mr-2'
-                  >
-                    บันทึก
-                  </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className='bg-gray-500 text-white px-4 py-2 rounded'
-                  >
-                    ยกเลิก
-                  </button>
-                </>
-              ) : (
-                <>
-                  <p className='text-lg'>ชื่อผู้ใช้: {userData?.name || session.user.name}</p>
-                  <p className='text-lg'>อีเมล: {userData?.email || session.user.email}</p>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className='bg-blue-500 text-white px-4 py-2 rounded mt-4'
-                  >
-                    แก้ไขข้อมูล
-                  </button>
-                </>
-              )}
-            </div>
-          ) : (
-            <p>กรุณาเข้าสู่ระบบ</p>
-          )}
-        </div>
+        {loading ? (
+          <div className='flex items-center justify-center h-screen'>
+            <div className='animate-spin rounded-full h-32 w-32 border-t-4 border-blue-500'></div>
+          </div>
+        ) : (
+          <div className='p-5 mt-16 bg-white w-9/12 rounded-lg'>
+            {session ? (
+              <div className='flex flex-col'>
+                {isEditing ? (
+                  <>
+                    <label className='text-lg'>ชื่อผู้ใช้:</label>
+                    <input
+                      type='text'
+                      value={editedData?.name || ''}
+                      onChange={(e) => setEditedData({ ...editedData!, name: e.target.value })}
+                      className='border rounded p-2 mb-4'
+                    />
+                    <label className='text-lg'>อีเมล:</label>
+                    <input
+                      type='email'
+                      value={editedData?.email || ''}
+                      onChange={(e) => setEditedData({ ...editedData!, email: e.target.value })}
+                      className='border rounded p-2 mb-4'
+                    />
+                    <button
+                      onClick={handleUpdate}
+                      className='bg-blue-500 text-white px-4 py-2 rounded mr-2'
+                    >
+                      บันทึก
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className='bg-gray-500 text-white px-4 py-2 rounded'
+                    >
+                      ยกเลิก
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className='text-lg'>ชื่อผู้ใช้: {userData?.name || session.user.name}</p>
+                    <p className='text-lg'>อีเมล: {userData?.email || session.user.email}</p>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className='bg-blue-500 text-white px-4 py-2 rounded mt-4'
+                    >
+                      แก้ไขข้อมูล
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <p>กรุณาเข้าสู่ระบบ</p>
+            )}
+          </div>
+        )}
       </div>
     </main>
   )

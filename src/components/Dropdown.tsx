@@ -1,6 +1,6 @@
 'use client'
 
-import { signOut, useSession } from 'next-auth/react'
+import { signOut } from 'next-auth/react'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'

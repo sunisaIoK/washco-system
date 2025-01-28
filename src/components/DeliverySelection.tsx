@@ -23,7 +23,7 @@ const DeliverySelection: React.FC<DeliverySelectionProps> = ({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [pickupDate, setPickupDate] = useState<Date | null>(null);
-    const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
+    // const [deliveryDate, setDeliveryDate] = useState<Date | null>(null);
 
     // ดึงข้อมูลบริการจาก API
     useEffect(() => {
@@ -55,12 +55,13 @@ const DeliverySelection: React.FC<DeliverySelectionProps> = ({
         if (pickupDate) {
             const returnDate = new Date(pickupDate.getTime());
             returnDate.setHours(returnDate.getHours() + 48); // เพิ่ม 48 ชั่วโมงสำหรับการจัดส่ง
-            setDeliveryDate(returnDate);
+            // setDeliveryDate(returnDate);
+            setPickupDate(pickupDate);
         } else {
-            setDeliveryDate(null);
+            // setDeliveryDate(null);
         }
     }, [pickupDate]);
-
+   
     const activeDeliveries = deliveries.filter((delivery) => delivery.isActive);
 
     return (
