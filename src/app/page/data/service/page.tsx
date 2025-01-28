@@ -197,20 +197,20 @@ const ServiceData = () => {
             )}
             <table className="table-auto mt-2 w-full border-collapse border border-gray-300">
               <thead>
-                <tr className="bg-gray-100  text-xl">
-                  <th className="border px-4 py-2">ชื่อบริการ</th>
-                  <th className="border px-4 py-2">รายละเอียด</th>
-                  <th className="border px-4 py-2">ชั่วโมง</th>
-                  <th className="border px-4 py-2">ราคา</th>
-                  <th className="border px-4 py-2">สถานะ</th>
-                  <th className="border px-4 py-2">การดำเนินการ</th>
+                <tr className="bg-gray-300  text-xl">
+                  <th className="border border-gray-500 px-4 py-2">ชื่อบริการ</th>
+                  <th className="border border-gray-500 px-4 py-2">รายละเอียด</th>
+                  <th className="border border-gray-500 px-4 py-2">ชั่วโมง</th>
+                  <th className="border border-gray-500 px-4 py-2">ราคา</th>
+                  <th className="border border-gray-500 px-4 py-2">สถานะ</th>
+                  <th className="border border-gray-500 px-4 py-2">การดำเนินการ</th>
                 </tr>
               </thead>
               <tbody>
                 {currentDeliveries.map((service) => (
-                  <tr key={service.id} className="text-center  text-lg even:bg-gray-50 odd:bg-white hover:bg-gray-100">
+                  <tr key={service.id} className="text-center text-lg even:bg-gray-100 odd:bg-white hover:bg-gray-300">
                     {/* ชื่อบริการ */}
-                    <td className="border px-4 py-2">
+                    <td className="border border-gray-400 px-4 py-2">
                       {editingId === service.id ? (
                         <input
                           type="text"
@@ -228,7 +228,7 @@ const ServiceData = () => {
                       )}
                     </td>
                     {/* รายละเอียด */}
-                    <td className="border px-4 py-2">
+                    <td className="border border-gray-400 px-4 py-2">
                       {editingId === service.id ? (
                         <textarea
                           value={tempService.description || ""}
@@ -238,14 +238,14 @@ const ServiceData = () => {
                               description: e.target.value,
                             })
                           }
-                          className="border px-2 py-1 w-full"
+                          className="border border-gray-400 px-2 py-1 w-full"
                         />
                       ) : (
                         service.description
                       )}
                     </td>
                     {/* ราคา */}
-                    <td className="border px-4 py-2">
+                    <td className="border border-gray-400 px-4 py-2">
                       {editingId === service.id ? (
                         <input
                           type="number"
@@ -256,13 +256,13 @@ const ServiceData = () => {
                               hour: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="border px-2 py-1 w-full"
+                          className="border border-gray-400 px-2 py-1 w-full"
                         />
                       ) : (
                         `${service.hour} ชั่วโมง`
                       )}
                     </td>
-                    <td className="border px-4 py-2">
+                    <td className="border border-gray-400 px-4 py-2">
                       {editingId === service.id ? (
                         <input
                           type="number"
@@ -273,14 +273,14 @@ const ServiceData = () => {
                               price: parseFloat(e.target.value) || 0,
                             })
                           }
-                          className="border px-2 py-1 w-full"
+                          className="border border-gray-400 px-2 py-1 w-full"
                         />
                       ) : (
                         `${service.price} บาท`
                       )}
                     </td>
                     {/* สถานะ */}
-                    <td className="border px-4 py-2">
+                    <td className="border border-gray-400 px-4 py-2">
                       <button
                         onClick={() => toggleStatus(service.id, service.isActive)}
                         className={`px-3 py-1 rounded ${service.isActive
@@ -292,7 +292,7 @@ const ServiceData = () => {
                       </button>
                     </td>
                     {/* การดำเนินการ */}
-                    <td className="border px-4 py-2">
+                    <td className="border border-gray-400 px-4 py-2">
                       {editingId === service.id ? (
                         <>
                           <button

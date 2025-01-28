@@ -1,20 +1,19 @@
 'use client';
 
-import { useState } from "react";
+// import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
-type Props = {
-    children?: React.ReactNode;
-};
-
-const Tab = ({ children }: Props) => {
+// type Props = {
+//     children?: React.ReactNode;
+// };
+const Tab = () => {
     const router = useRouter();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const { data: session } = useSession(); // ใช้เพื่อดึงข้อมูล Session
+    // const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    // const { data: session } = useSession(); // ใช้เพื่อดึงข้อมูล Session
 
-    const user = session?.user; // ข้อมูลผู้ใช้จาก session
+    // const user = session?.user; // ข้อมูลผู้ใช้จาก session
     // const isAdmin = user?.role === "admin"; // ตรวจสอบ role
 
     const handleSignOut = () => {

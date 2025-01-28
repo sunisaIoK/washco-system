@@ -47,7 +47,6 @@ const DetailData = () => {
   useEffect(() => {
     fetchDetails(); // Fetch details when the component is mounted
   }, []);
-
   const toggleStatus = async (id: string, isActive: boolean) => {
     try {
       setLoading(true);
@@ -91,7 +90,6 @@ const DetailData = () => {
       setLoading(false);
     }
   };
-
   const handleSave = async () => {
     if (!selectedDetail) return;
 
@@ -122,7 +120,6 @@ const DetailData = () => {
       setIsSaving(false);
     }
   };
-
   const openViewModal = (detail: Detail) => {
     setSelectedDetail(detail);
     setIsViewModalOpen(true);
@@ -142,10 +139,10 @@ const DetailData = () => {
   const sortedOrders = details.sort((a, b) => a.nameDetail.localeCompare(b.nameDetail, 'th'));
   console.log(sortedOrders);
   const activeDetails = details.filter(() => details);
- // ฟังก์ชันคำนวณหน้า
- const indexOfLastItem = currentPage * itemsPerPage;
- const indexOfFirstItem = indexOfLastItem - itemsPerPage;
- const currentDetails = details.slice(indexOfFirstItem, indexOfLastItem);
+  // ฟังก์ชันคำนวณหน้า
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentDetails = details.slice(indexOfFirstItem, indexOfLastItem);
   // เปลี่ยนหน้า
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -213,23 +210,23 @@ const DetailData = () => {
           )}
           <table className="w-full border-collapse border mt-2 border-gray-300 text-sm">
             <thead>
-              <tr className="bg-gray-100 text-xl">
-                <th className="border px-4 py-2">ชื่อรายละเอียด</th>
-                <th className="border px-4 py-2">ราคา</th>
-                <th className="border px-4 py-2">สถานะ</th>
-                <th className="border px-4 py-2">ดูข้อมูล</th>
-                <th className="border px-4 py-2">การจัดการ</th>
+              <tr className="bg-gray-300 text-xl">
+                <th className="border border-gray-500 px-4 py-2">ชื่อรายละเอียด</th>
+                <th className="border border-gray-500 px-4 py-2">ราคา</th>
+                <th className="border border-gray-500 px-4 py-2">สถานะ</th>
+                <th className="border border-gray-500 px-4 py-2">ดูข้อมูล</th>
+                <th className="border border-gray-500 px-4 py-2">การจัดการ</th>
               </tr>
             </thead>
             <tbody>
               {currentDetails.map((detail) => (
-                <tr key={detail.id} className="bg-white text-center text-lg even:bg-gray-50 hover:bg-gray-100">
+                <tr key={detail.id} className="bg-white text-center text-lg even:bg-gray-100 hover:bg-gray-300">
                   {/* ชื่อรายละเอียด */}
-                  <td className="border px-4 py-2">{detail.nameDetail}</td>
+                  <td className="border border-gray-400 px-4 py-2">{detail.nameDetail}</td>
                   {/* ราคา */}
-                  <td className="border px-4 py-2">{detail.price} บาท</td>
+                  <td className="border border-gray-400 px-4 py-2">{detail.price} บาท</td>
                   {/* สถานะ */}
-                  <td className="border px-4 py-2">
+                  <td className="border border-gray-400 px-4 py-2">
                     <button
                       onClick={() => toggleStatus(detail.id, detail.isActive)}
                       className={`px-4 py-1 rounded ${detail.isActive
@@ -241,7 +238,7 @@ const DetailData = () => {
                     </button>
                   </td>
                   {/* ดูข้อมูล */}
-                  <td className="border px-4 py-2">
+                  <td className="border border-gray-400 px-4 py-2">
                     <button
                       onClick={() => openViewModal(detail)}
                       className="bg-blue-200 text-blue-500 px-3 py-1 rounded hover:bg-blue-300 hover:text-blue-600"
@@ -250,7 +247,7 @@ const DetailData = () => {
                     </button>
                   </td>
                   {/* การจัดการ */}
-                  <td className="border px-4 py-2 gap-2 ">
+                  <td className="border border-gray-400 px-4 py-2 gap-2 ">
                     <button
                       onClick={() => openEditModal(detail)}
                       className="bg-yellow-400 text-white hover:text-white px-2 py-2 mr-1 rounded hover:bg-yellow-500"

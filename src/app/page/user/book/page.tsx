@@ -69,7 +69,6 @@ const BookingPage = () => {
     const serviceRef = useRef<HTMLDivElement>(null);
     const detailsRef = useRef<HTMLDivElement>(null);
     const deliveryRef = useRef<HTMLDivElement>(null);
-    const contactRef = useRef<HTMLDivElement>(null);
     const addressRef = useRef<HTMLDivElement>(null);
     const dateRef = useRef<HTMLDivElement>(null);
     const totalRef = useRef<HTMLDivElement>(null);
@@ -99,133 +98,74 @@ const BookingPage = () => {
 
     const handlePaymentAndBooking = async () => {
         const stripe = await stripePromise;
-
+      
         if (!stripe) {
-            toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Stripe');
-            return;
+          toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Stripe');
+          return;
         }
-
+      
         if (!selectedService || !pickupDate || !pickupTime || !formData.name || !formData.phone) {
-            toast.error('กรุณากรอกข้อมูลให้ครบถ้วน!');
-            return;
+          toast.error('กรุณากรอกข้อมูลให้ครบถ้วน!');
+          return;
         }
-
+      
         const totalPrice = calculateTotalPrice();
-
+      
         const order: ConfirmedOrder = {
-            services: selectedService,
-            details: Object.values(selectedDetail),
-            delivery: selectedDelivery,
-            totalPrice,
-            hotelName: formData.hotelName,
-            roomNumber: formData.roomNumber,
-            additionalDetails: formData.additionalDetails,
-            name: formData.name,
-            phone: formData.phone,
-            customerId: session?.user?.id || '',
-            paymentStatus: 'pending',
-            pickupDate: `${pickupDate} ${pickupTime}`,
-            deliveryDate: `${deliveryDate} ${deliveryTime}`,
+          services: selectedService,
+          details: Object.values(selectedDetail),
+          delivery: selectedDelivery,
+          totalPrice,
+          hotelName: formData.hotelName,
+          roomNumber: formData.roomNumber,
+          additionalDetails: formData.additionalDetails,
+          name: formData.name,
+          phone: formData.phone,
+          customerId: session?.user?.id || '',
+          paymentStatus: 'pending',
+          pickupDate: `${pickupDate} ${pickupTime}`,
+          deliveryDate: `${deliveryDate} ${deliveryTime}`,
         };
-
+      
         try {
-            const items = [
-                {
-                    name: order.services?.nameService || 'บริการ', // ชื่อบริการ
-                    price: (order.services?.price || 0) * 100, // ราคาในรูปแบบสตางค์
-                    quantity: 1,
-                },
-                // เพิ่มรายละเอียดเพิ่มเติม
-                ...order.details.map((detail) => ({
-                    name: detail.fieldValue, // ชื่อรายการ
-                    price: (detail.price || 0) * 100, // ราคาในรูปแบบสตางค์
-                    quantity: 1,
-                })),
-                // เพิ่มข้อมูลการจัดส่ง
-                ...(order.delivery
-                    ? [
-                          {
-                              name: `การจัดส่ง: ${order.delivery.Delivery}`, // ชื่อการจัดส่ง
-                              price: 0, // สมมติไม่มีค่าใช้จ่าย
-                              quantity: 1,
-                          },
-                          {
-                              name: `รายละเอียดการจัดส่ง: ${order.delivery.descriptionDelivery}`, // รายละเอียดการจัดส่ง
-                              price: 0,
-                              quantity: 1,
-                          },
-                      ]
-                    : []),
-                // เพิ่มข้อมูลผู้จอง
-                ...(order.hotelName
-                    ? [
-                          {
-                              name: `โรงแรม: ${order.hotelName}`,
-                              price: 0,
-                              quantity: 1,
-                          },
-                      ]
-                    : []),
-                ...(order.roomNumber
-                    ? [
-                          {
-                              name: `หมายเลขห้อง: ${order.roomNumber}`,
-                              price: 0,
-                              quantity: 1,
-                          },
-                      ]
-                    : []),
-                ...(order.additionalDetails
-                    ? [
-                          {
-                              name: `รายละเอียดเพิ่มเติม: ${order.additionalDetails}`,
-                              price: 0,
-                              quantity: 1,
-                          },
-                      ]
-                    : []),
-            ];
-            
-            const stripeSession = await fetch('/api/stripe/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items }),
-            });
-
-            if (!stripeSession.ok) {  
-                throw new Error('ไม่สามารถสร้าง Checkout Session ได้');
-            }
-
-            const { id } = await stripeSession.json();
-
-            const { error } = await stripe.redirectToCheckout({ sessionId: id });
-
-            if (!error) {
-                // order.paymentStatus = 'paid';
-                const saveResponse = await fetch('/api/data/order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(order),
-                });
-
-                const saveResult = await saveResponse.json();
-                console.log('Save Response:', saveResult);
-
-                if (!saveResponse.ok) {
-                    console.error('Save Error:', saveResult);
-                    toast.error('เกิดข้อผิดพลาดในการบันทึกคำสั่งซื้อ');
-                    throw new Error('ไม่สามารถบันทึกคำสั่งซื้อได้');
-                }
-                toast.success('ชำระเงินสำเร็จและบันทึกคำสั่งซื้อเรียบร้อยแล้ว!');
-            } else {
-                toast.error('เกิดข้อผิดพลาดในการชำระเงิน');
-            }
+          const items = [
+            {
+              name: order.services?.nameService || 'บริการ',
+              price: (order.services?.price || 0) * 100,
+              quantity: 1,
+            },
+            ...order.details.map((detail) => ({
+              name: detail.fieldValue,
+              price: (detail.price || 0) * 100,
+              quantity: 1,
+            })),
+          ];
+      
+          const stripeSession = await fetch('/api/stripe/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items }),
+          });
+      
+          if (!stripeSession.ok) {
+            throw new Error('ไม่สามารถสร้าง Checkout Session ได้');
+          }
+      
+          const { id } = await stripeSession.json();
+      
+          const { error } = await stripe.redirectToCheckout({ sessionId: id });
+      
+          if (!error) {
+            toast.success('กำลังดำเนินการชำระเงิน...');
+          } else {
+            toast.error('เกิดข้อผิดพลาดในการชำระเงิน');
+          }
         } catch (error) {
-            console.error('Error:', error);
-            toast.error('เกิดข้อผิดพลาดในการชำระเงินหรือบันทึกคำสั่งซื้อ');
+          console.error('Error:', error);
+          toast.error('เกิดข้อผิดพลาดในการชำระเงินหรือบันทึกคำสั่งซื้อ');
         }
-    };
-
+      };
+      
     const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>, offset: number = 0) => {
         if (ref.current) {
             const targetPosition = ref.current.getBoundingClientRect().top + window.scrollY;

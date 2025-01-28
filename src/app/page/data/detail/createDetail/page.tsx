@@ -55,6 +55,7 @@ const CreateDetail = () => {
       if (!nameDetail || !fields || !price) {
         setError("กรุณากรอกข้อมูลให้ครบถ้วน");
         setIsLoading(false);
+        setIsActive(true);
         return;
       }
 

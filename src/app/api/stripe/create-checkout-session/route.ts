@@ -34,11 +34,10 @@ export async function POST(req: Request) {
             success_url: `${req.headers.get("origin")}/page/user/history`,
             cancel_url: `${req.headers.get("origin")}/`,
             metadata: {
-                userId: "USER_ID", // ระบุ userId
-                bookingId: "BOOKING_ID", // ระบุ bookingId
+                userId: "USER_ID_FRONTEND", // ระบุ userId
+                bookingId: "BOOKING_ID_FRONTEND", // ระบุ bookingId
             },
         });
-
 
         return NextResponse.json({ id: session.id, message: "ชำระเงินสำเร็จ" });
     } catch (error) {

@@ -1,7 +1,7 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
-import React, { useState } from 'react';
+// import { useSession } from 'next-auth/react';
+import React from 'react';
 
 interface AddressSelectionProps {
   formData: {
@@ -21,8 +21,8 @@ interface AddressSelectionProps {
 }
 
 const AddressSelection: React.FC<AddressSelectionProps> = ({ formData, onAddressChange }) => {
-  const { data: session } = useSession();
-  const user = session?.user; // ข้อมูลผู้ใช้จาก session
+  // const { data: session } = useSession();/
+  // const user = session?.user; // ข้อมูลผู้ใช้จาก session
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -103,7 +103,8 @@ const AddressSelection: React.FC<AddressSelectionProps> = ({ formData, onAddress
               onChange={handleChange}
               className="w-full border rounded-md p-2"
               placeholder="เพิ่มรายละเอียดที่เกี่ยวกับที่อยู่"
-            ></textarea>
+            >
+            </textarea>
           </div>
         </div>
       </div>

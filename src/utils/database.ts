@@ -1,5 +1,5 @@
 import { App, cert, getApps, initializeApp } from "firebase-admin/app";
-import { CollectionGroup, CollectionReference, DocumentData, DocumentSnapshot, Firestore, Query, Timestamp, getFirestore } from "firebase-admin/firestore";
+import { Firestore, getFirestore } from "firebase-admin/firestore";
 
 let app: App;
 
@@ -32,13 +32,8 @@ function getFirestoreInstance(): Firestore {
     return firestoreInstance;
 }
 
-type Converter<T> = {
-    toFirestore: (data: T) => DocumentData;
-    fromFirestore: (snap: DocumentSnapshot) => T;
-}
-
 class firestore {
-    static getCollection(arg0: string) {
+    static getCollection() {
         throw new Error('Method not implemented.');
     }
     private db: Firestore;

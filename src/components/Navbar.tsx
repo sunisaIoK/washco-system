@@ -1,19 +1,19 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession} from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import Dropdown from "./Dropdown";
 
 function Navbar() {
   const { data: session } = useSession(); // ใช้เพื่อดึงข้อมูล Session
-  const router = useRouter();
+  // const router = useRouter();
 
-  const handleSignOut = () => {
-    signOut(); // ใช้ next-auth สำหรับออกจากระบบ
-    router.push("/page/signin");
-  };
+  // const handleSignOut = () => {
+  //   signOut(); // ใช้ next-auth สำหรับออกจากระบบ
+  //   router.push("/page/signin");
+  // };
 
   const user = session?.user; // ข้อมูลผู้ใช้จาก session
   const isAdmin = user?.role === "admin"; // ตรวจสอบ role

@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
 
         console.log('Order Saved Successfully:', newOrder.id);
         return NextResponse.json({ id: newOrder.id, success: true }); // ส่ง ID กลับ
-    } catch (error: any) {
-        console.error('Error Saving Order:', error.message);
+    } catch (error) {
+        console.error('Error Saving Order:', error);
         return NextResponse.json(
-            { error: 'Failed to save order', details: error.message },
+            { error: 'Failed to save order', details: error },
             { status: 500 } // Internal Server Error
         );
     }

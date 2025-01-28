@@ -174,7 +174,7 @@ const Delivery = () => {
 
   return (
     <main className="flex flex-col mr-12 ml-16 p-9">
-      <div className="flex justify-between items-center ml-24 mr-2 mb-3">
+      <div className="flex justify-between items-center ml-3 -mr-9 mb-3">
         <h1 className="text-2xl font-bold">จัดการข้อมูลเดลิเวอรี่</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
@@ -233,27 +233,27 @@ const Delivery = () => {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto ml-20">
+          <div className="overflow-x-auto w-full">
             {activeDelivery.length > 0 && (
               <span className="text-blue-800 text-sm " >
                 พบรายละเอียดทั้งหมด: {activeDelivery.length} รายการ
               </span>
             )}
-            <table className=" table-auto border-collapse border border-gray-300 w-full ">
+            <table className=" table-auto border-collapse border border-gray-300 w-full max-w-4xl">
               <thead>
-                <tr className="bg-gray-200 text-left ">
-                  <th className="border border-gray-300 p-3 text-center">ชื่อบริการ</th>
-                  <th className="border border-gray-300 p-3 text-center">รายละเอียด</th>
-                  <th className="border border-gray-300 p-3 w-1/5 text-center">สถานะ</th>
-                  <th className="border border-gray-300 p-3 w-1/5 text-center">การจัดการ</th>
+                <tr className="bg-gray-300 text-left ">
+                  <th className="border border-gray-500 p-3 text-center">ชื่อบริการ</th>
+                  <th className="border border-gray-500 p-3 text-center">รายละเอียด</th>
+                  <th className="border border-gray-500 p-3 text-center">สถานะ</th>
+                  <th className="border border-gray-500 p-3 w-1/5 text-center">การจัดการ</th>
                 </tr>
               </thead>
               <tbody >
                 {currentDeliveries.map((delivery) => (
-                  <tr key={delivery.id} className="hover:bg-gray-100 even:bg-gray-50 bg-white">
-                    <td className="border border-gray-300 p-3 text-center">{delivery.Delivery}</td>
-                    <td className="border border-gray-300 p-3 text-center">{delivery.descriptionDelivery}</td>
-                    <td className="border border-gray-300 p-3 text-center">
+                  <tr key={delivery.id} className="hover:bg-gray-300 even:bg-gray-100 bg-white">
+                    <td className="border border-gray-400 p-3 text-center">{delivery.Delivery}</td>
+                    <td className="border border-gray-400 p-5 w-5/5 text-center">{delivery.descriptionDelivery}</td>
+                    <td className="border border-gray-400 p-3 text-center">
                       <button
                         onClick={() => toggleStatus(delivery.id, delivery.isActive)}
                         className={`px-3 py-1  rounded ${delivery.isActive
@@ -263,7 +263,7 @@ const Delivery = () => {
                         {delivery.isActive ? 'เปิด' : 'ปิด'}
                       </button>
                     </td>
-                    <td className="border border-gray-300 p-3 space-x-2 text-center">
+                    <td className="border border-gray-400 p-3 space-x-2 text-center">
                       <button
                         onClick={() => {
                           setSelectedDelivery(delivery); // เซ็ตข้อมูลที่เลือก

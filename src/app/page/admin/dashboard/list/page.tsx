@@ -116,8 +116,8 @@ const List = () => {
     const activeOrders = orders.filter((order) => order.isActive); // กำลังซักรีด
     const inactiveOrders = orders.filter((order) => !order.isActive); // จัดส่งแล้ว
     // Pagination Logic
-    const paginate = (pageNumber: number, setPage: React.Dispatch<React.SetStateAction<number>>) =>
-        setPage(pageNumber);
+    // const paginate = (pageNumber: number, setPage: React.Dispatch<React.SetStateAction<number>>) =>
+    //     setPage(pageNumber);
     const renderTable = (
         orders: Order[],
         title: string,
@@ -193,13 +193,13 @@ const List = () => {
                             <div className="overflow-x-auto mt-2">
                                 <table className="border-collapse text-center border border-gray-400 w-full">
                                     <thead>
-                                        <tr className="bg-gray-200">
-                                            <th className="border border-gray-300 p-2">ชื่อจอง</th>
-                                            <th className="border border-gray-300 p-2">บริการที่เลือก</th>
-                                            <th className="border border-gray-300 p-2">วิธีการรับ-ส่งคืน</th>
-                                            <th className="border border-gray-300 p-2">วันที่จอง</th>
-                                            <th className="border border-gray-300 p-2">การดำเนินการ</th>
-                                            <th className="border border-gray-300 p-2">ดูข้อมูล</th>
+                                        <tr className="bg-gray-300">
+                                            <th className="border border-gray-500 p-2">ชื่อจอง</th>
+                                            <th className="border border-gray-500 p-2">บริการที่เลือก</th>
+                                            <th className="border border-gray-500 p-2">วิธีการรับ-ส่งคืน</th>
+                                            <th className="border border-gray-500 p-2">วันที่จอง</th>
+                                            <th className="border border-gray-500 p-2">การดำเนินการ</th>
+                                            <th className="border border-gray-500 p-2">ดูข้อมูล</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -208,17 +208,17 @@ const List = () => {
                                                 key={order.id}
                                                 className="hover:bg-gray-100 even:bg-gray-50 bg-white border border-gray-300"
                                             >
-                                                <td className="border border-gray-300 p-2">{order.name}</td>
-                                                <td className="border border-gray-300 p-2">
+                                                <td className="border border-gray-400 p-2">{order.name}</td>
+                                                <td className="border border-gray-400 p-2">
                                                     {order.services?.nameService || "ไม่มีบริการ"}
                                                 </td>
-                                                <td className="border border-gray-300 p-2">
+                                                <td className="border border-gray-400 p-2">
                                                     {order.delivery?.Delivery || "ไม่มีวิธีการรับ-ส่งคืน"}
                                                 </td>
-                                                <td className="border border-gray-300 p-2">
+                                                <td className="border border-gray-400 p-2">
                                                     {formatToThaiTime(order.createdAt)}
                                                 </td>
-                                                <td className="border px-4 py-2 w-2/12">
+                                                <td className="border border-gray-400 px-4 py-2 w-2/12">
                                                     <button
                                                         onClick={() => toggleStatus(order.id, order.isActive)}
                                                         className={`px-4 py-1 rounded ${order.isActive
@@ -229,7 +229,7 @@ const List = () => {
                                                         {order.isActive ? "กำลังซักรีด" : "จัดส่งแล้ว"}
                                                     </button>
                                                 </td>
-                                                <td className="border border-gray-300 p-2">
+                                                <td className="border border-gray-400 p-2">
                                                     <button
                                                         onClick={() => openViewModal(order)}
                                                         className="bg-blue-200 text-blue-500 px-3 py-1 rounded hover:bg-blue-300 hover:text-blue-600"
