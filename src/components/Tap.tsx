@@ -26,13 +26,13 @@ const Tab = () => {
             {/* {isAdmin && ( */}
             <>
                 <div className="flex flex-col rounded-lg bg-white p-9">
-                    <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                    {/* <div className="flex items-center justify-between p-4 border-b border-gray-700">
                         <button
                             className="text-white hover:text-blue-950 p-2 rounded-lg"
                         >
                             <Icon icon="mdi:shield-account" className="w-8 ml-5 h-8 color-icon" />
                         </button>
-                    </div>
+                    </div> */}
                     <div className="flex flex-col md:flex-row">
                         <nav className="mt-4 space-y-4">
                             <div className="flex flex-col md:flex-row">

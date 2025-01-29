@@ -46,7 +46,7 @@ export const POST = async (req: NextRequest) => {
       process.env.STRIPE_WEBHOOK_SECRET as string
     );
 
-    console.log('Event constructed:', event.type);
+    console.log('Event constructed:', event);
   } catch (err) {
     console.error('Webhook Error:', err);
     return new NextResponse(`Webhook Error: ${err}`, { status: 400 });
@@ -56,20 +56,27 @@ export const POST = async (req: NextRequest) => {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        // ตรวจสอบ metadata
+
         if (!session.metadata?.userId || !session.metadata?.bookingId) {
           console.error('Missing metadata in checkout.session.completed');
           return new NextResponse('Missing metadata', { status: 400 });
         }
+
         console.log('Handling checkout.session.completed:', session);
+
         await updateDatabaseStatus({
           userId: session.metadata.userId,
           bookingId: session.metadata.bookingId,
           status: 'success',
-          paymentId: session.payment_intent as string,
+          paymentStatus: session.payment_intent as string,
           totalAmount: session.amount_total || 0,
           currency: session.currency || 'thb',
         });
+        if (!session.metadata || !session.metadata.bookingId) {
+          console.error('Missing bookingId in metadata');
+          return new NextResponse('Invalid metadata', { status: 400 });
+        }
+        
         break;
       }
       case 'charge.updated': {
@@ -91,12 +98,34 @@ export const POST = async (req: NextRequest) => {
           userId: paymentIntent.metadata.userId,
           bookingId: paymentIntent.metadata.bookingId,
           status: charge.status === 'succeeded' ? 'success' : 'failed',
-          paymentId: charge.payment_intent as string,
+          paymentStatus: charge.payment_intent as string,
           totalAmount: charge.amount || 0,
           currency: charge.currency || 'thb',
         });
         break;
       }
+      // case 'payment_intent.succeeded': {
+      //   const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      
+      //   if (!paymentIntent.metadata || !paymentIntent.metadata.bookingId) {
+      //     console.error('Missing metadata in payment_intent.succeeded');
+      //     return new NextResponse('Missing metadata', { status: 400 });
+      //   }
+      
+      //   console.log('Handling payment_intent.succeeded with metadata:', paymentIntent.metadata);
+      
+      //   await updateDatabaseStatus({
+      //     userId: paymentIntent.metadata.userId,
+      //     bookingId: paymentIntent.metadata.bookingId,
+      //     status: 'success',
+      //     paymentStatus: paymentIntent.id,
+      //     totalAmount: paymentIntent.amount || 0,
+      //     currency: paymentIntent.currency || 'thb',
+      //   });
+      
+      //   break;
+      // }
+      
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
@@ -112,7 +141,7 @@ async function updateDatabaseStatus(data: {
   userId: string;
   bookingId: string;
   status: string;
-  paymentId: string;
+  paymentStatus: string;
   totalAmount: number;
   currency: string;
 }) {
@@ -122,34 +151,55 @@ async function updateDatabaseStatus(data: {
   const bookingRef = db.getCollection(DB_COLLECTIONS.ORDER).doc(data.bookingId);
 
   try {
+    const bookingDoc = await bookingRef.get();
+
+    if (!bookingDoc.exists) {
+      console.error(`Booking ID: ${data.bookingId} not found`);
+      throw new Error('Booking not found');
+    }
+
     await bookingRef.update({
       status: data.status,
-      paymentId: data.paymentId,
+      paymentId: data.paymentStatus,
       totalAmount: data.totalAmount,
       currency: data.currency,
       updatedAt: new Date().toISOString(),
     });
+
+    console.log('Database updated successfully for Booking ID:', data.bookingId);
   } catch (err) {
-    throw new Error(`Database update failed: ${err}`);
+    console.error('Failed to update database:', err);
+    throw err;
   }
 }
 
-// async function sendNotificationToUser(userId: string, title: string, message: string) {
-//   console.log(`Sending notification to user: ${userId}`);
 
-//   // สมมติว่าคุณมีฟังก์ชันที่เชื่อมต่อกับระบบ Notification เช่น Firebase หรือ Email Service
+// async function sendNotificationToAdmin(data: {
+//   bookingId: string;
+//   status: string;
+//   paymentStatus: string;
+// }) {
 //   try {
-//     // ตัวอย่างการส่ง Notification
-//     await fetch(`https://api.notification-service.com/send`, {
+//     console.log('Sending notification to admin:', data);
+
+//     const response = await fetch('http://localhost:3000/page/admin/dashboard', {
 //       method: 'POST',
 //       headers: { 'Content-Type': 'application/json' },
 //       body: JSON.stringify({
-//         userId,
-//         title,
-//         message,
+//         message: `Payment for Booking ID: ${data.bookingId} is now ${data.status}`,
+//         bookingId: data.bookingId,
+//         status: data.status,
+//         paymentStatus: data.paymentStatus,
+//         timestamp: new Date().toISOString(),
 //       }),
 //     });
-//     console.log('Notification sent successfully!');
+
+//     if (!response.ok) {
+//       throw new Error(`Failed to send notification: ${response.statusText}`);
+//     }
+
+//     console.log('Notification sent successfully to admin!');
 //   } catch (err) {
+//     console.error('Failed to send notification to admin:', err);
 //   }
 // }

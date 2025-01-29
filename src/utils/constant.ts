@@ -4,9 +4,11 @@ const DB_COLLECTIONS = {
     DETAILS_SERVICE: 'DetailService',
     SERVICE: 'Service',
     LOGIN: 'users',
-    ORDER: 'Orders',
+    ORDER: 'BookOrder',
     HIS: 'his',
-    PAYMENT: 'StatusPayment'
+    PAYMENT: 'StatusPayment',
+    COMMENT: 'Comments'
+    
 
 }
 export default DB_COLLECTIONS

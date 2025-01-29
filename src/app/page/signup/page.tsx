@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function SignUp() {
   const [name, setName] = useState('');
@@ -9,69 +11,49 @@ function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmpassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
-    setSuccess('');
-
+  
     if (password !== confirmpassword) {
-      setError('รหัสผ่านไม่ตรงกัน');
+      toast.error('รหัสผ่านไม่ตรงกัน');
       setIsLoading(false);
       return;
     }
-
+  
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, lastname, email, password }),
       });
-
+  
       const data = await response.json();
-
-      if (data.ok) {
-        // แสดงข้อความสำเร็จ และ Redirect ไปยังแดชบอร์ด
-        setSuccess('สมัครสมาชิกสำเร็จ');
-        alert('สมัครสมาชิกสำเร็จ');
-        // setTimeout(() => {
-        // }, 1000);
+  
+      // ตรวจสอบสถานะ HTTP
+      if (response.ok) {
+        // ตรวจสอบข้อมูลเพิ่มเติมจาก data
+        if (data.ok) {
+        } else {
+          toast.error('เกิดข้อผิดพลาด: ' + (data.message ));
+        }
       } else {
-        setError(data.error || 'เกิดข้อผิดพลาด');
+        toast.error('เกิดข้อผิดพลาด: ' + response.statusText);
       }
     } catch (err) {
-      setError('เกิดข้อผิดพลาดในการสมัครสมาชิก');
-      console.log(err);
-
+      console.error('Error:', err);
+      toast.error('เกิดข้อผิดพลาดในการสมัครสมาชิก');
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <>
       <div className="flex flex-col items-center min-w-screen">
-        {/* <Image style={{ marginTop: "-1%" }}
-          src="/assets/images/Wash.png"
-          width={150}
-          height={50}
-          alt="Wash Logo"
-          className="flex justify-self-center mb-5"
-        /> */}
-        {error && (
-          <div className='text-red-500 bg-red-100 rounded-xl items-center  w-auto mb-2 p-2'>
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className='text-green-500b items-center bg-emerald-100 rounded-xl  w-auto mb-2 p-2'>
-            {success}
-          </div>
-        )}
+        <ToastContainer />
         <form onSubmit={handleSubmit} className="flex flex-col justify-self-center mt-auto w-auto">
           <Card>
             <CardHeader>

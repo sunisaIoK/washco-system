@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { toast } from "react-toastify";
 
 interface FormElements extends HTMLFormControlsCollection {
     email: HTMLInputElement;
@@ -38,9 +39,9 @@ function SignInPage() {
             });
 
             if (res?.error) {
-                setError("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+                toast.error("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
             } else {
-                setSuccess("เข้าสู่ระบบสำเร็จ");
+                toast.success("เข้าสู่ระบบสำเร็จ");
 
                 setTimeout(async () => {
                     // ดึงข้อมูล session เพื่อตรวจสอบ role
@@ -59,7 +60,7 @@ function SignInPage() {
             }
         } catch (error) {
             console.error("Login Error:", error);
-            setError("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+            toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
         } finally {
             setIsLoading(false);
         }

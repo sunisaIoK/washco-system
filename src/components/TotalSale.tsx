@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 import { Chart, registerables as registered } from 'chart.js';
 // import CountUser from "src/components/admin/graph/CountUser";
 import { useRouter } from "next/navigation";
@@ -47,6 +47,7 @@ const TotalSales = () => {
     const router = useRouter();
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+    const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar'); // เพิ่มสถานะประเภทกราฟ
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -66,13 +67,17 @@ const TotalSales = () => {
         fetchAllData();
     }, [router]);
     // if (error) return <p className="text-red-500">{error}</p>;
-
+    // ฟิลเตอร์คำสั่งซื้อ
+    const filteredOrders = orders.filter((order) => {
+        const orderDate = new Date(order.createdAt);
+        return (!startDate || orderDate >= startDate) && (!endDate || orderDate <= endDate);
+    });
     // ฟังก์ชันนับคำสั่งซื้อแยกตามเดือน
     const countOrdersByMonth = (orders: Orders[]) => {
         const ordersByMonth: { [key: string]: number } = {};
         orders.forEach(order => {
             const orderDate = new Date(order.createdAt);
-            const month = orderDate.toLocaleString('default', { day: 'numeric', month: 'long', year: 'numeric' }); // รูปแบบ "มกราคม 2023"
+            const month = orderDate.toLocaleString('default', { day: 'numeric'}); // รูปแบบ "มกราคม 2023"
 
             if (ordersByMonth[month]) {
                 ordersByMonth[month] += 1;
@@ -84,12 +89,6 @@ const TotalSales = () => {
         return ordersByMonth;
     };
 
-    // ฟิลเตอร์คำสั่งซื้อ
-    const filteredOrders = orders.filter((order) => {
-        const orderDate = new Date(order.createdAt);
-        return (!startDate || orderDate >= startDate) && (!endDate || orderDate <= endDate);
-    });
-
     // คำนวณจำนวนคำสั่งซื้อโดยแยกตามเดือน
     const ordersByMonth = countOrdersByMonth(filteredOrders);
 
@@ -100,38 +99,66 @@ const TotalSales = () => {
             label: 'ยอดขายทั้งหมด',
             data: Object.values(ordersByMonth),
             backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(255, 205, 86, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(54, 162, 235, 0.2)',
-                'rgba(153, 102, 255, 0.2)',
-                'rgba(201, 203, 207, 0.2)'
+                'rgba(255, 0, 55, 0.57)',
+                'rgb(255, 174, 93)',
+                'rgb(88, 225, 161)',
+                'rgb(33, 197, 88)',
+                'rgb(0, 153, 255)',
+                'rgb(85, 0, 255)',
+                'rgba(0, 75, 188, 0.8)',
+                'rgba(56, 200, 213, 0.57)',
+                'rgb(255, 174, 93)',
+                'rgb(88, 209, 225)',
+                'rgb(190, 140, 255)',
+                'rgb(0, 153, 255)',
+                'rgb(85, 0, 255)',
+                'rgba(159, 197, 255, 0.8)'
             ],
             borderColor: [
                 'rgb(255, 99, 132)',
                 'rgb(255, 159, 64)',
-                'rgb(255, 205, 86)',
-                'rgb(75, 192, 192)',
-                'rgb(54, 162, 235)',
-                'rgb(153, 102, 255)',
-                'rgb(201, 203, 207)'
+                'rgb(52, 197, 154)',
+                'rgb(50, 202, 116)',
+                'rgb(43, 128, 185)',
+                'rgb(85, 0, 255)',
+                'rgb(24, 64, 138)',
+                'rgb(128, 222, 227)',
+                'rgb(255, 159, 64)',
+                'rgb(82, 29, 255)',
+                'rgb(0, 77, 164)',
+                'rgb(43, 128, 185)',
+                'rgb(85, 0, 255)',
+                'rgb(148, 186, 255)',
             ],
             borderWidth: 1
         }]
     };
 
-    const config = {
-        type: 'bar',
-        data: data,
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        },
+    const chartOptions = {
+        scales: { y: { beginAtZero: true } },
     };
+    const renderChart = () => {
+        switch (chartType) {
+            case 'line':
+                return <Line data={data} options={chartOptions} />;
+            default:
+                return <Bar data={data} options={chartOptions} />;
+        }
+    };
+    // const config = {
+    //     type: 'bar',
+    //     data: data,
+    //     options: {
+    //         plugins: {
+    //             title: {
+    //                 display: false,
+    //                 text: 'ยอดขายทั้งหมด'
+    //             }
+    //         }
+    //     },
+    // };
+    const sortedOrders = orders.sort((b, a) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    console.log(sortedOrders);
 
     return (
         <main className="max-w-4xl mx-auto flex flex-col justify-center items-center">
@@ -160,9 +187,21 @@ const TotalSales = () => {
                         className="w-9/12 p-1 rounded  text-center"
                     />
                 </div>
-                <div className="flex  flex-col items-center pl-9 pr-9 pt-5 pb-5 p-1 rounded-lg">
+                <div className="mt-4">
+                    <label htmlFor="chartType" className="mr-2">ประเภทกราฟ:</label>
+                    <select
+                        id="chartType"
+                        value={chartType}
+                        onChange={(e) => setChartType(e.target.value as 'bar' | 'line' | 'pie')}
+                        className="p-2 border rounded"
+                    >
+                        <option value="bar">Bar Chart</option>
+                        <option value="line">Line Chart</option>
+                    </select>
+                </div>
+                <div className="flex flex-col items-center pt-5 pb-5 p-1 rounded-lg w-full">
                     {data.datasets[0].data.length > 0 ? (
-                        <Bar data={data} options={config.options} style={{ width: '800px', height: '300px' }} />
+                        renderChart()
                     ) : (
                         <div className="text-gray-500 mx-9 my-9 w-56  text-center ">
                             <p className="text-gray-500 h-20">ไม่มีข้อมูลคำสั่งซื้อในช่วงเวลานี้</p>

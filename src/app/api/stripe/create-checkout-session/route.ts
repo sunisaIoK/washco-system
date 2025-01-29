@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export async function POST(req: Request) {
     try {
-        const { items } = await req.json();
+        const { items, bookingId } = await req.json();
 
         console.log("Items received from Frontend:", items); // Debug ข้อมูลที่ส่ง
 
@@ -34,8 +34,7 @@ export async function POST(req: Request) {
             success_url: `${req.headers.get("origin")}/page/user/history`,
             cancel_url: `${req.headers.get("origin")}/`,
             metadata: {
-                userId: "USER_ID_FRONTEND", // ระบุ userId
-                bookingId: "BOOKING_ID_FRONTEND", // ระบุ bookingId
+                bookingId: bookingId, // ระบุ bookingId
             },
         });
 
