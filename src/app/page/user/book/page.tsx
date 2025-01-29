@@ -43,7 +43,7 @@ interface ConfirmedOrder {
     name: string;
     phone: string;
     customerId: string;
-    paymentStatus: 'pending' | 'paid';
+    paymentStatus: 'paid' | 'pending';
     pickupDate: string;
     deliveryDate: string;
 }
@@ -55,6 +55,7 @@ const BookingPage = () => {
     const [selectedDetail, setSelectedDetail] = useState<{ [key: string]: DetailField }>({});
     const [selectedService, setSelectedService] = useState<ServiceData | null>(null);
     const [selectedDelivery, setSelectedDelivery] = useState<DeliveryData | null>(null);
+    const [bookingId, setBookingId] = useState<string>('');
     const [formData, setFormData] = useState({
         hotelName: '',
         roomNumber: '',
@@ -72,6 +73,9 @@ const BookingPage = () => {
     const addressRef = useRef<HTMLDivElement>(null);
     const dateRef = useRef<HTMLDivElement>(null);
     const totalRef = useRef<HTMLDivElement>(null);
+    const [orderStatus, setOrderStatus] = useState<string>('pending'); // เริ่มต้นสถานะเป็น 'paid'
+    const [isOrderConfirmed, setIsOrderConfirmed] = useState<boolean>(false); // สถานะแสดงผลหน้าสรุป
+    const [orderSummary, setOrderSummary] = useState<ConfirmedOrder | null>(null);
 
     useEffect(() => {
         if (pickupDate && pickupTime && selectedService) {
@@ -87,6 +91,31 @@ const BookingPage = () => {
         }
     }, [pickupDate, pickupTime, selectedService]);
 
+    useEffect(() => {
+        const fetchOrderStatus = async () => {
+            try {
+                if (!bookingId) return;
+
+                const response = await fetch(`/api/data/order-status?bookingId=${bookingId}`);
+                if (!response.ok) {
+                    console.error('Failed to fetch order status');
+                    return;
+                }
+
+                const result = await response.json();
+console.log(orderStatus);
+
+                // ตรวจสอบสถานะและอัปเดต
+                const validStatuses = ['pending', 'confirmed', 'success', 'failed', 'canceled'];
+                setOrderStatus(validStatuses.includes(result.status) ? result.status : 'paid');
+            } catch (error) {
+                console.error('Error fetching order status:', error);
+            }
+        };
+
+        fetchOrderStatus();
+    }, [bookingId]);
+
     const calculateTotalPrice = () => {
         let total = 0;
         if (selectedService) total += selectedService.price;
@@ -96,76 +125,149 @@ const BookingPage = () => {
         return total;
     };
 
+    const handleConfirmOrder = async () => {
+        if (!selectedService || !pickupDate || !pickupTime || !formData.name || !formData.phone) {
+            toast.error('กรุณากรอกข้อมูลให้ครบถ้วน!');
+            return;
+        }
+        if (!selectedService) {
+            toast.error('กรุณาเลือกบริการ!');
+            return;
+        }
+        if (!pickupDate || !pickupTime) {
+            toast.error('กรุณาเลือกวันที่และเวลารับ!');
+            return;
+        }
+        if (!formData.name || !formData.phone) {
+            toast.error('กรุณากรอกชื่อและเบอร์โทร!');
+            return;
+        }
+        const totalPrice = calculateTotalPrice();
+
+        const order: ConfirmedOrder = {
+            services: selectedService,
+            details: Object.values(selectedDetail),
+            delivery: selectedDelivery,
+            totalPrice,
+            hotelName: formData.hotelName,
+            roomNumber: formData.roomNumber,
+            additionalDetails: formData.additionalDetails,
+            name: formData.name,
+            phone: formData.phone,
+            customerId: session?.user?.id || '',
+            paymentStatus:  'paid' ,
+            pickupDate: `${pickupDate} ${pickupTime}`,
+            deliveryDate: `${deliveryDate} ${deliveryTime}`,
+        };
+
+        try {
+            const response = await fetch('/api/data/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(order),
+            });
+
+            if (!response.ok) {
+                throw new Error('ไม่สามารถบันทึกข้อมูลการจองได้');
+            }
+
+            const result = await response.json();
+            toast.success('ยืนยันข้อมูลการจองเรียบร้อย');
+
+            // ตั้งค่า `bookingId` และข้อมูลสรุป
+            setBookingId(result.bookingId);
+            setOrderSummary(order);
+            setIsOrderConfirmed(true); // อัปเดตสถานะเพื่อแสดงหน้าสรุป
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูลการจอง');
+        }
+    };
     const handlePaymentAndBooking = async () => {
         const stripe = await stripePromise;
-      
+
         if (!stripe) {
-          toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Stripe');
-          return;
+            toast.error('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Stripe');
+            return;
         }
-      
+
         if (!selectedService || !pickupDate || !pickupTime || !formData.name || !formData.phone) {
-          toast.error('กรุณากรอกข้อมูลให้ครบถ้วน!');
-          return;
+            toast.error('กรุณากรอกข้อมูลให้ครบถ้วน!');
+            return;
         }
-      
-        const totalPrice = calculateTotalPrice();
-      
-        const order: ConfirmedOrder = {
-          services: selectedService,
-          details: Object.values(selectedDetail),
-          delivery: selectedDelivery,
-          totalPrice,
-          hotelName: formData.hotelName,
-          roomNumber: formData.roomNumber,
-          additionalDetails: formData.additionalDetails,
-          name: formData.name,
-          phone: formData.phone,
-          customerId: session?.user?.id || '',
-          paymentStatus: 'pending',
-          pickupDate: `${pickupDate} ${pickupTime}`,
-          deliveryDate: `${deliveryDate} ${deliveryTime}`,
-        };
-      
+
         try {
-          const items = [
-            {
-              name: order.services?.nameService || 'บริการ',
-              price: (order.services?.price || 0) * 100,
-              quantity: 1,
-            },
-            ...order.details.map((detail) => ({
-              name: detail.fieldValue,
-              price: (detail.price || 0) * 100,
-              quantity: 1,
-            })),
-          ];
-      
-          const stripeSession = await fetch('/api/stripe/create-checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items }),
-          });
-      
-          if (!stripeSession.ok) {
-            throw new Error('ไม่สามารถสร้าง Checkout Session ได้');
-          }
-      
-          const { id } = await stripeSession.json();
-      
-          const { error } = await stripe.redirectToCheckout({ sessionId: id });
-      
-          if (!error) {
-            toast.success('กำลังดำเนินการชำระเงิน...');
-          } else {
-            toast.error('เกิดข้อผิดพลาดในการชำระเงิน');
-          }
+            // เตรียมข้อมูลสำหรับ Stripe Session
+            const items = [
+                {
+                    name: selectedService?.nameService || 'บริการ',
+                    price: (selectedService?.price || 0) * 100,
+                    quantity: 1,
+                },
+                ...Object.values(selectedDetail).map((detail) => ({
+                    name: detail.fieldValue,
+                    price: (detail.price || 0) * 100,
+                    quantity: 1,
+                })),
+            ];
+
+            // สร้าง Checkout Session
+            const stripeSession = await fetch('/api/stripe/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items,
+                    metadata: {
+                        bookingId,
+                        userId: session?.user?.id || '',
+                    }, // ส่ง bookingId ไปยัง metadata
+                }),
+            });
+
+            if (!stripeSession.ok) {
+                throw new Error('ไม่สามารถสร้าง Checkout Session ได้');
+            }
+
+            const { id } = await stripeSession.json();
+
+            // เรียก redirectToCheckout
+            const { error } = await stripe.redirectToCheckout({ sessionId: id });
+
+            if (!error) {
+                toast.success('กำลังดำเนินการชำระเงิน...');
+
+                // อัปเดตสถานะการชำระเงินเมื่อชำระเงินสำเร็จ
+                const paymentUpdateResponse = await fetch(`/api/order/${bookingId}/update-status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookingId, paymentStatus: 'paid' }),
+                });
+
+                if (!paymentUpdateResponse.ok) {
+                    throw new Error('ไม่สามารถอัปเดตสถานะการชำระเงินได้');
+                }
+
+                const updatedOrder = await paymentUpdateResponse.json();
+
+                // อัปเดต `orderSummary`
+                setOrderSummary((prev) => {
+                    if (!prev) return null;
+                    return {
+                        ...prev,
+                        paymentStatus: updatedOrder?.paymentStatus || 'paid',
+                    };
+                });
+
+                toast.success('การชำระเงินสำเร็จและอัปเดตสถานะเรียบร้อย');
+            } else {
+                toast.error('เกิดข้อผิดพลาดในการชำระเงิน');
+            }
         } catch (error) {
-          console.error('Error:', error);
-          toast.error('เกิดข้อผิดพลาดในการชำระเงินหรือบันทึกคำสั่งซื้อ');
+            console.error('Error:', error);
+            toast.error('เกิดข้อผิดพลาดในการชำระเงิน');
         }
-      };
-      
+    };
+
     const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>, offset: number = 0) => {
         if (ref.current) {
             const targetPosition = ref.current.getBoundingClientRect().top + window.scrollY;
@@ -184,7 +286,7 @@ const BookingPage = () => {
                 <h2 className="text-md text-gray-500">ด้วยบริการ ซัก อบ รีด ด้วยความพิถีพิถัน ใส่ใจในทุกขั้นตอน</h2>
                 <h2 className="text-md text-blue-800 mt-9 text-lg font-bold">เริ่มคำสั่งจอง</h2>
             </div>
-            <div className="flex flex-col items-center md:flex-row fixed mt-9 -left-11 p-4" style={{ top: '50%', transform: 'translateY(-77%)' }}>
+            <div className="flex flex-col items-center md:flex-row fixed mt-12 -left-11 p-4" style={{ top: '50%', transform: 'translateY(-77%)' }}>
                 <div className="flex flex-col space-x-4 justify-center">
                     <button
                         onClick={() => scrollToSection(serviceRef, 300)}
@@ -280,98 +382,62 @@ const BookingPage = () => {
             <section className="w-7/12 max-w-4xl mb-4" ref={addressRef}>
                 <AddressSelection formData={formData} onAddressChange={setFormData} />
             </section>
-            <section className="w-7/12 max-w-4xl mb-4 flex bg-white p-6 rounded-3xl shadow-xl flex-col items-center" ref={totalRef}>
-                <h2 className="text-blue-800 font-bold text-xl mb-4">สรุปคำสั่งซื้อ</h2>
-
-                {/* ค่าบริการ */}
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">บริการที่เลือก:</span>
-                    <span className="text-blue-800">{selectedService?.nameService || 'ยังไม่ได้เลือกบริการ'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">ค่าบริการ:</span>
-                    <span className="text-blue-800">{selectedService?.price || 0} บาท</span>
-                </div>
-
-                {/* รายละเอียดเพิ่มเติม */}
-                {Object.values(selectedDetail).map((detail, index) => (
-                    <div key={index} className="w-full flex justify-between mb-2">
-                        <div className="flex mb-2">
+            {isOrderConfirmed ? (
+                <section className="w-7/12 max-w-4xl mb-4 flex bg-white p-6 rounded-3xl shadow-xl flex-col items-center" ref={totalRef}>
+                    <h2 className="text-blue-800 font-bold text-xl mb-4">สรุปคำสั่งซื้อ</h2>
+                    <div className="w-full flex justify-between mb-2">
+                        <span className="text-gray-600">บริการที่เลือก:</span>
+                        <span className="text-blue-800">{orderSummary?.services?.nameService || 'ยังไม่ได้เลือกบริการ'}</span>
+                    </div>
+                    <div className="w-full flex justify-between mb-2">
+                        <span className="text-gray-600">ค่าบริการ:</span>
+                        <span className="text-blue-800">{orderSummary?.services?.price || 0} บาท</span>
+                    </div>
+                    {/* รายละเอียดเพิ่มเติม */}
+                    {orderSummary?.details.map((detail, index) => (
+                        <div key={index} className="w-full flex justify-between mb-2">
                             <span className="text-gray-600">{detail.fieldValue}:</span>
-                        </div>
-                        <div className="flex mb-2">
                             <span className="text-blue-800">{detail.price || 0} บาท</span>
                         </div>
+                    ))}
+                    {/* วันที่และเวลารับ/ส่ง */}
+                    <div className="w-full flex justify-between mb-2">
+                        <span className="text-gray-600">วันที่รับ:</span>
+                        <span className="text-blue-800">{orderSummary?.pickupDate}</span>
                     </div>
-                ))}
+                    <div className="w-full flex justify-between mb-2">
+                        <span className="text-gray-600">วันที่ส่ง:</span>
+                        <span className="text-blue-800">{orderSummary?.deliveryDate}</span>
+                    </div>
+                    <div className="w-full flex justify-between border-t mt-4 pt-2">
+                        <span className="text-gray-800 font-bold">ยอดรวมทั้งหมด:</span>
+                        <span className="text-blue-900 font-bold text-lg">{orderSummary?.totalPrice || 0} บาท</span>
+                    </div>
+                    {/* สถานะการชำระเงิน */}
+                    <div className="w-full flex justify-between mb-2">
+                        <span className="text-gray-600">สถานะการชำระเงิน:</span>
+                        <span className={`text-lg font-bold ${orderSummary?.paymentStatus === 'paid' ? 'text-red-600' : 'text-green-600'}`}>
+                            {orderSummary?.paymentStatus !== 'paid' ? 'จ่ายแล้ว' : 'ยังไม่ได้ชำระเงิน'}
+                        </span>
+                    </div>
+                    {orderSummary?.paymentStatus === 'paid' && (
+                        <button
+                            onClick={handlePaymentAndBooking}
+                            className="px-6 py-3 mb-9 rounded-lg bg-blue-900 text-white text-lg font-bold hover:bg-blue-600"
+                        >
+                            ชำระเงิน
+                        </button>
+                    )}
+                </section>
+            ) : (
+                <button
+                    onClick={handleConfirmOrder}
+                    className="px-6 py-3 mb-4 rounded-lg bg-green-600 text-white text-lg font-bold hover:bg-green-500"
+                >
+                    ยืนยันการจอง
+                </button>
+            )}
 
-                {/* วิธีการจัดส่ง */}
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">วิธีรับ/ส่ง:</span>
-                    <span className="text-blue-800">{selectedDelivery?.Delivery || 'ยังไม่ได้เลือกวิธีจัดส่ง'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">รายละเอียดการจัดส่ง:</span>
-                    <span className="text-blue-800">{selectedDelivery?.descriptionDelivery || 'ไม่มีข้อมูล'}</span>
-                </div>
-
-                {/* วันที่และเวลารับ/ส่ง */}
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">วันที่รับ:</span>
-                    <span className="text-blue-800">{pickupDate || 'ยังไม่ได้เลือกวันที่'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">เวลาที่รับ:</span>
-                    <span className="text-blue-800">{pickupTime || 'ยังไม่ได้เลือกเวลา'}</span>
-                </div>
-                {deliveryDate && deliveryTime && (
-                    <>
-                        <div className="w-full flex justify-between mb-2">
-                            <span className="text-gray-600">วันที่ส่ง:</span>
-                            <span className="text-blue-800">{deliveryDate}</span>
-                        </div>
-                        <div className="w-full flex justify-between mb-2">
-                            <span className="text-gray-600">เวลาที่ส่ง:</span>
-                            <span className="text-blue-800">{deliveryTime}</span>
-                        </div>
-                    </>
-                )}
-
-                {/* ข้อมูลเพิ่มเติม */}
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">ชื่อผู้จอง:</span>
-                    <span className="text-blue-800">{formData.name || 'ยังไม่ได้กรอกข้อมูล'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">เบอร์โทร:</span>
-                    <span className="text-blue-800">{formData.phone || 'ยังไม่ได้กรอกข้อมูล'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">โรงแรม:</span>
-                    <span className="text-blue-800">{formData.hotelName || 'ยังไม่ได้กรอกข้อมูล'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">หมายเลขห้อง:</span>
-                    <span className="text-blue-800">{formData.roomNumber || 'ยังไม่ได้กรอกข้อมูล'}</span>
-                </div>
-                <div className="w-full flex justify-between mb-2">
-                    <span className="text-gray-600">รายละเอียดเพิ่มเติม:</span>
-                    <span className="text-blue-800">{formData.additionalDetails || 'ไม่มีข้อมูล'}</span>
-                </div>
-
-                {/* ยอดรวมทั้งหมด */}
-                <div className="w-full flex justify-between border-t mt-4 pt-2">
-                    <span className="text-gray-800 font-bold">ยอดรวมทั้งหมด:</span>
-                    <span className="text-blue-900 font-bold text-lg">{calculateTotalPrice()} บาท</span>
-                </div>
-            </section>
-
-            <button
-                onClick={handlePaymentAndBooking}
-                className="px-6 py-3 mb-9 rounded-lg bg-blue-900 text-white text-lg font-bold hover:bg-blue-600"
-            >
-                ชำระเงิน
-            </button>
         </div>
     );
 };

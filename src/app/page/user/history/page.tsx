@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 //รูปแบบข้อมูล
 interface Order {
@@ -44,12 +45,14 @@ const History = () => {
                     method: 'GET',
                 });
                 if (!response.ok) {
-                    throw new Error('ไม่สามารถดึงข้อมูลได้');
+                toast.error('เกิดข้อผิดพลาดในการดึงรายละเอียด');
                 }
                 const data = await response.json();
                 setOrders(data.Orders || []); // เซ็ตข้อมูลคำสั่งจอง
             } catch (error) {
-                console.error('เกิดข้อผิดพลาดในการดึงรายละเอียด:', error);
+                toast.error('เกิดข้อผิดพลาดในการดึงรายละเอียด');
+                console.log(error);
+                
             } finally {
                 setLoading(false);
             }
@@ -180,7 +183,7 @@ const History = () => {
                                     <td className="border border-gray-300 p-2">
                                         <span
                                             className={`px-2 py-1 rounded 
-                                                ${order.paymentStatus === 'paid'
+                                                    ${order.paymentStatus === 'paid'
                                                     ? 'bg-green-100 text-green-600'
                                                     : 'bg-red-100 text-red-600'
                                                 }`}
@@ -188,6 +191,7 @@ const History = () => {
                                             {order.paymentStatus}
                                         </span>
                                     </td>
+
                                     <td className="border px-4 py-2">
                                         <button
                                             onClick={() => (order.id, order.isActive)}

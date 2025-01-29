@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 
 //รูปแบบข้อมูล
 interface Order {
@@ -13,6 +14,7 @@ interface Order {
     additionalDetails: string;
     pickupDate: string;
     deliveryDate: string;
+    paymentStatus:  'paid';
     createdAt: string;
     // สมมติว่ามีฟิลด์บริการมาเป็น Object ด้วย
     services: { nameService: string; price: number; description: string; hour: number } | null;
@@ -36,7 +38,7 @@ const List = () => {
             setLoading(true);
             const response = await fetch('/api/data/order', { method: 'GET' });
             if (!response.ok) {
-                throw new Error('ไม่สามารถดึงข้อมูลได้');
+                toast.error('เกิดข้อผิดพลาดในการดึงรายละเอียด');
             }
             const data = await response.json();
             console.log('API Response:', data); // เพิ่ม log เพื่อตรวจสอบข้อมูล
@@ -88,21 +90,6 @@ const List = () => {
         };
         return new Intl.DateTimeFormat('th-TH', options).format(new Date(dateString));
     };
-
-    // const formatTime = (seconds: number, nanoseconds: number) => {
-    //     const min = seconds * 1000 + Math.floor(nanoseconds / 1_000_000);
-    //     const date = new Date(min);
-    //     const options: Intl.DateTimeFormatOptions = {
-    //         timeZone: 'Asia/Bangkok',
-    //         year: 'numeric',
-    //         month: 'long',
-    //         day: 'numeric',
-    //         hour: '2-digit',
-    //         minute: '2-digit',
-    //         second: '2-digit'
-    //     }
-    //     return new Intl.DateTimeFormat('th-TH', options).format(date);
-    // }
 
     const openViewModal = (order: Order) => {
         setSelectedOrder(order);
@@ -284,7 +271,7 @@ const List = () => {
                                             <p className="font-semibold mb-1 mt-1">บริการ :</p>
                                             <p className="bg-gray-100 px-3 py-2 rounded">{selectedOrder.services?.nameService} {selectedOrder.services?.description} {selectedOrder.services?.hour} ชม. {selectedOrder.services?.price} บาท</p>
                                             <p className="font-semibold mb-1 mt-1">สถานะชำระ :</p>
-                                            <p className="bg-gray-100 px-3 py-2 rounded mb-1">สถานะชำระ</p>
+                                            <p className="bg-gray-100 px-3 py-2 rounded mb-1">{selectedOrder.paymentStatus}</p>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 text-center gap-4 w-7/12 ml-2 mr-2">

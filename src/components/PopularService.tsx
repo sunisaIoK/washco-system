@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Bar } from 'react-chartjs-2';
+import {  Doughnut } from 'react-chartjs-2';
 import { Chart, registerables as registered } from 'chart.js';
 import { useRouter } from "next/navigation";
 
@@ -95,18 +95,18 @@ const PopularService = () => {
             label: 'บริการที่ได้รับความนิยม',
             data: serviceData,
             backgroundColor: [
-                'rgba(255, 99, 132, 0.2)',
-                'rgba(255, 159, 64, 0.2)',
-                'rgba(75, 192, 192, 0.2)',
-                'rgba(2, 154, 255, 0.2)',
+                'rgb(19, 106, 205)',
+                'rgb(255, 149, 0)',
+                'rgb(0, 177, 103)',
+                'rgb(255, 39, 248)',
                 'rgba(153, 102, 255, 0.2)',
                 'rgba(201, 203, 207, 0.2)'
             ],
             borderColor: [
-                'rgb(255, 99, 132)',
+                'rgb(14, 37, 186)',
                 'rgb(220, 110, 0)',
-                'rgb(75, 192, 192)',
-                'rgb(0, 153, 255)',
+                'rgb(1, 179, 117)',
+                'rgb(212, 0, 255)',
                 'rgb(153, 102, 255)',
                 'rgb(201, 203, 207)'
             ],
@@ -115,14 +115,9 @@ const PopularService = () => {
     };
 
     const config = {
-        type: 'bar',
+        type: 'doughnut',
         data: data,
         options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                }
-            },
             plugins: {
                 legend: {
                     display: false,
@@ -157,13 +152,12 @@ const PopularService = () => {
                                             className="w-6 h-6 rounded-full mr-4"
                                             style={{ backgroundColor: config.data.datasets[0].backgroundColor[index] }}
                                         >
-                                            
                                         </div>
                                         <p className="text-lg font-semibold">{label}</p>
                                     </div>
                                 ))}
                             </div>
-                            <Bar data={data} options={config.options} style={{ width: '100px', height: '300px' }} />
+                            <Doughnut data={data} options={config.options} style={{ width: '100px', height: '300px' }} />
                         </main>
                     ) : (
                         <p className="text-gray-500">ไม่มีบริการที่ได้รับความนิยมในช่วงเวลานี้</p>

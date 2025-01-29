@@ -97,18 +97,18 @@ const MonthSales = () => {
                 label: 'รายได้ต่อเดือน',
                 data: totalSalesData,
                 backgroundColor: [
-                    'rgb(167, 226, 255)',
-                    'rgb(17, 72, 166)',
-                    'rgb(13, 135, 212)',
+                    'rgb(0, 170, 255)',
+                    'rgb(0, 45, 144)',
+                    'rgb(96, 0, 222)',
                     'rgb(22, 167, 167)',
                     'rgb(54, 162, 235)',
                     'rgb(102, 148, 255)',
                     'rgb(201, 203, 207)'
                 ],
                 borderColor: [
-                    'rgb(0, 179, 255)',
+                    'rgb(3, 179, 255)',
                     'rgb(17, 72, 166)',
-                    'rgb(13, 135, 212)',
+                    'rgb(162, 13, 212)',
                     'rgb(22, 167, 167)',
                     'rgb(54, 162, 235)',
                     'rgb(102, 148, 255)',
@@ -120,7 +120,7 @@ const MonthSales = () => {
                 label: 'ยอดคำสั่งซื้อต่อเดือน',
                 data: orderCountData,
                 backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(232, 48, 88, 0.95)',
                     'rgba(255, 159, 64, 0.2)',
                     'rgba(255, 205, 86, 0.2)',
                     'rgba(75, 192, 192, 0.2)',
@@ -129,7 +129,7 @@ const MonthSales = () => {
                     'rgba(201, 203, 207, 0.2)'
                 ],
                 borderColor: [
-                    'rgb(255, 99, 132)',
+                    'rgb(232, 54, 92)',
                     'rgb(255, 159, 64)',
                     'rgb(255, 205, 86)',
                     'rgb(75, 192, 192)',
@@ -152,7 +152,7 @@ const MonthSales = () => {
             },
             plugins: {
                 title: {
-                    display: true,
+                    display: false,
                     text: 'รายได้และยอดคำสั่งซื้อต่อเดือน'
                 }
             }
